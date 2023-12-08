@@ -46,10 +46,12 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 	res := make([]*resolvers.HAnime, 0)
 
 	if !opt.Series {
-		videos, err := getDLInfo(vid)
+		videos, eps, err := getDLInfo(vid)
 		if err != nil {
 			return nil, fmt.Errorf("get download info: %w", err)
 		}
+
+		log.Info("Episodes found", "episodes", eps[0])
 
 		res = append(res, &resolvers.HAnime{
 			URL:    u,
@@ -58,12 +60,16 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 			Videos: videos,
 		})
 	} else {
+		titles := make([]string, 0)
+
 		for _, s := range series {
 			_, vID, _ := getSiteAndVID(s) // no need to check err
-			videos, err := getDLInfo(vID)
+			videos, eps, err := getDLInfo(vID)
 			if err != nil {
 				return nil, fmt.Errorf("get download info: %w", err)
 			}
+
+			titles = append(titles, eps[0])
 
 			res = append(res, &resolvers.HAnime{
 				URL:    s,
@@ -72,6 +78,8 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 				Videos: videos,
 			})
 		}
+
+		log.Infof("Episodes found %#q", titles)
 	}
 
 	return res, nil
@@ -136,18 +144,19 @@ func getSeriesLinks(node *html.Node) []string {
 	return links
 }
 
-func getDLInfo(vid string) (map[string]*resolvers.Video, error) {
+func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 	doc, err := getDLPage(vid)
 	if err != nil {
-		return nil, fmt.Errorf("get download page: %w", err)
+		return nil, nil, fmt.Errorf("get download page: %w", err)
 	}
 
 	tables := util.FindTagByNameAttrs(doc, "table", true, []html.Attribute{{Key: "class", Val: "download-table"}})
 	if len(tables) == 0 {
-		return nil, errors.New("download info not found")
+		return nil, nil, errors.New("download info not found")
 	}
 
 	vidMap := make(map[string]*resolvers.Video)
+	episodes := make([]string, 0)
 
 	// hanime1.me only have one table in dl page
 	aTags := util.FindTagByNameAttrs(tables[0], "a", false, nil)
@@ -158,8 +167,10 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, error) {
 		title := util.GetAttrVal(a, "download")
 		size, ext, err := getVideoInfo(link)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+
+		episodes = append(episodes, title)
 
 		vidMap[id] = &resolvers.Video{
 			ID:      id,
@@ -171,7 +182,7 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, error) {
 		}
 	}
 
-	return vidMap, nil
+	return vidMap, episodes, nil
 }
 
 const ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36"

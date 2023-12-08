@@ -19,7 +19,7 @@ func (m model) View() string {
 	pad := strings.Repeat(" ", padding)
 
 	title := filepath.Base(m.fileName)
-	bar := lipgloss.JoinHorizontal(lipgloss.Top, pad, title, pad, m.progress.View(), pad, getDLStatus(m.pw.downloaded, m.pw.total))
+	bar := lipgloss.JoinHorizontal(lipgloss.Top, pad, m.progress.View(), pad, getDLStatus(m.pw.downloaded, m.pw.total), pad, title)
 
 	sb.WriteString("\n")
 	sb.WriteString(bar)
