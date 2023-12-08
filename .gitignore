@@ -24,3 +24,5 @@ go.work
 .idea
 
 dist/
+
+test/dl
