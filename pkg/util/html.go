@@ -14,7 +14,7 @@ func FindTagByNameAttrs(node *html.Node, name string, useAttr bool, attrs []html
 		q = q[1:]
 
 		if cur.Type == html.ElementNode && cur.Data == name {
-			if useAttr && SliceEqual(cur.Attr, attrs) {
+			if useAttr && IsSubSlice(cur.Attr, attrs) {
 				res = append(res, cur)
 			}
 			if !useAttr {
@@ -30,6 +30,11 @@ func FindTagByNameAttrs(node *html.Node, name string, useAttr bool, attrs []html
 	return res
 }
 
+func FindTagByRegExp(doc string, regStr string) [][]string {
+	r := regexp.MustCompile(regStr)
+	return r.FindAllStringSubmatch(doc, -1)
+}
+
 func GetAttrVal(node *html.Node, name string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == name {
@@ -38,9 +43,4 @@ func GetAttrVal(node *html.Node, name string) string {
 	}
 
 	return ""
-}
-
-func FindTagByRegExp(doc string, regStr string) [][]string {
-	r := regexp.MustCompile(regStr)
-	return r.FindAllStringSubmatch(doc, -1)
 }

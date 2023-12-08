@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
 	"github.com/acgtools/hanime-hunter/pkg/util"
+	"github.com/charmbracelet/log"
 	"golang.org/x/net/html"
 	"net"
 	"net/http"
@@ -29,31 +30,110 @@ var _ resolvers.Resolver = (*resolver)(nil)
 
 type resolver struct{}
 
-func (re *resolver) Resolve(u string) ([]*resolvers.HAnime, error) {
-	urlRes, err := url.Parse(u)
+func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnime, error) {
+	site, vid, err := getSiteAndVID(u)
 	if err != nil {
 		return nil, fmt.Errorf("parse url: %w", err)
 	}
 
-	vid, ok := urlRes.Query()["v"]
-	if !ok {
-		return nil, errors.New("video id not found")
+	title, series, err := getAniInfo(u)
+	if err != nil {
+		return nil, fmt.Errorf("get ani info: %w", err)
 	}
 
-	videos, err := getDLInfo(vid[0])
-	if err != nil {
-		return nil, fmt.Errorf("get dl info: %w", err)
-	}
+	log.Info("Anime Info", "title", title)
 
 	res := make([]*resolvers.HAnime, 0)
 
-	res = append(res, &resolvers.HAnime{
-		URL:    u,
-		Site:   urlRes.Host,
-		Videos: videos,
-	})
+	if !opt.Series {
+		videos, err := getDLInfo(vid)
+		if err != nil {
+			return nil, fmt.Errorf("get download info: %w", err)
+		}
+
+		res = append(res, &resolvers.HAnime{
+			URL:    u,
+			Site:   site,
+			Title:  title,
+			Videos: videos,
+		})
+	} else {
+		for _, s := range series {
+			_, vID, _ := getSiteAndVID(s) // no need to check err
+			videos, err := getDLInfo(vID)
+			if err != nil {
+				return nil, fmt.Errorf("get download info: %w", err)
+			}
+
+			res = append(res, &resolvers.HAnime{
+				URL:    s,
+				Site:   site,
+				Title:  title,
+				Videos: videos,
+			})
+		}
+	}
 
 	return res, nil
+}
+
+func getSiteAndVID(u string) (string, string, error) {
+	urlRes, err := url.Parse(u)
+	if err != nil {
+		return "", "", fmt.Errorf("parse url: %w", err)
+	}
+
+	vid, ok := urlRes.Query()["v"]
+	if !ok || len(vid) == 0 {
+		return "", "", errors.New("vid not found")
+	}
+	return urlRes.Host, vid[0], nil
+}
+
+func getAniInfo(u string) (string, []string, error) {
+	doc, err := getAniPage(u)
+	if err != nil {
+		return "", nil, fmt.Errorf("get ani page: %w", err)
+	}
+
+	series := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "id", Val: "video-playlist-wrapper"}})
+	seriesTag := series[0]
+
+	titleTag := util.FindTagByNameAttrs(seriesTag, "h4", false, nil)
+	title := titleTag[0].FirstChild.Data
+
+	return title, getSeriesLinks(seriesTag), nil
+}
+
+func getAniPage(u string) (*html.Node, error) {
+	resp, err := request(http.MethodGet, u)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("get anime info page: %w", err)
+	}
+
+	return doc, nil
+}
+
+func getSeriesLinks(node *html.Node) []string {
+	list := util.FindTagByNameAttrs(node, "div", true, []html.Attribute{{Key: "id", Val: "playlist-scroll"}})
+
+	aTags := util.FindTagByNameAttrs(list[0], "a", false, nil)
+
+	links := make([]string, 0)
+	for _, a := range aTags {
+		href := util.GetAttrVal(a, "href")
+		if strings.Contains(href, "watch") {
+			links = append(links, href)
+		}
+	}
+
+	return links
 }
 
 func getDLInfo(vid string) (map[string]*resolvers.Video, error) {
@@ -96,16 +176,8 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, error) {
 
 const ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36"
 
-func getVideoInfo(link string) (int64, string, error) {
-	client := newClient()
-
-	req, err := http.NewRequest(http.MethodGet, link, nil)
-	if err != nil {
-		return 0, "", fmt.Errorf("create dl link request: %w", err)
-	}
-	req.Header.Set("User-Agent", ua)
-
-	resp, err := client.Do(req)
+func getVideoInfo(u string) (int64, string, error) {
+	resp, err := request(http.MethodGet, u)
 	if err != nil {
 		return 0, "", fmt.Errorf("get dl info: %w", err)
 	}
@@ -127,9 +199,22 @@ func getID(link string) string {
 
 func getDLPage(vid string) (*html.Node, error) {
 	u := "https://hanime1.me/download?v=" + vid
+
+	resp, err := request(http.MethodGet, u)
+	defer resp.Body.Close()
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("parse html: %w", err)
+	}
+
+	return doc, nil
+}
+
+func request(method string, u string) (*http.Response, error) {
 	client := newClient()
 
-	req, err := http.NewRequest(http.MethodGet, u, nil)
+	req, err := http.NewRequest(method, u, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create http request: %w", err)
 	}
@@ -140,14 +225,8 @@ func getDLPage(vid string) (*html.Node, error) {
 	if err != nil {
 		return nil, fmt.Errorf("send http request: %w", err)
 	}
-	defer resp.Body.Close()
 
-	doc, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("parse html: %w", err)
-	}
-
-	return doc, nil
+	return resp, nil
 }
 
 func newClient() *http.Client {

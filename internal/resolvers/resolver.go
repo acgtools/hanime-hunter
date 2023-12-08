@@ -2,12 +2,13 @@ package resolvers
 
 import (
 	"fmt"
+	"github.com/charmbracelet/log"
 	"net/url"
 	"sync"
 )
 
 type Resolver interface {
-	Resolve(u string) ([]*HAnime, error)
+	Resolve(u string, opt *Option) ([]*HAnime, error)
 }
 
 var Resolvers = newResolverMap()
@@ -15,6 +16,11 @@ var Resolvers = newResolverMap()
 type ResolverMap struct {
 	m         sync.Mutex
 	resolvers map[string]Resolver
+}
+
+type Option struct {
+	Series   bool
+	PlayList bool
 }
 
 func newResolverMap() *ResolverMap {
@@ -30,7 +36,7 @@ func (r *ResolverMap) Register(domain string, resolver Resolver) {
 	r.m.Unlock()
 }
 
-func Resolve(u string) ([]*HAnime, error) {
+func Resolve(u string, opt *Option) ([]*HAnime, error) {
 	urlRes, err := url.Parse(u)
 	if err != nil {
 		return nil, fmt.Errorf("resovle url: %w", err)
@@ -38,7 +44,9 @@ func Resolve(u string) ([]*HAnime, error) {
 
 	domain := urlRes.Host
 
+	log.Infof("Site: %s", domain)
+
 	resolver := Resolvers.resolvers[domain]
 
-	return resolver.Resolve(u)
+	return resolver.Resolve(u, opt)
 }

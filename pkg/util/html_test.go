@@ -7,66 +7,28 @@ import (
 	"testing"
 )
 
+func BenchmarkFindTagByNameAttrs(b *testing.B) {
+	d, _ := html.Parse(strings.NewReader(doc))
+
+	for i := 0; i < b.N; i++ {
+		util.FindTagByNameAttrs(d, "table", false, nil)
+	}
+}
+
+func BenchmarkFindTagByRegExp(b *testing.B) {
+	const re = "(<table[^>]*>)(.*?)(.*)(</table>)"
+
+	for i := 0; i < b.N; i++ {
+		util.FindTagByRegExp(doc, re)
+	}
+}
+
 const doc = `
 
 <!DOCTYPE HTML>
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="referrer" content="no-referrer">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<meta name="google-site-verification" content="oV77KljbCxlciy-aD-Uy_dZSYUENVR_6jAhWSp_cb48" />
-	<meta name="exoclick-site-verification" content="c02975e2897725fd5f30045bf364309a">
-	<meta name="juicyads-site-verification" content="cc330848f3dfc20e8259699c6a096411">
-	<link rel="shortcut icon" type="image/x-icon" href="https://img4.qy0.ru/data/2205/36/tab_logo.png" />
-	<link rel="apple-touch-icon" href="https://img4.qy0.ru/data/2205/36/tab_logo.png" />
-	<link rel="canonical" href="https://hanime1.me/download?v=84720" />
-	<meta name="RATING" content="RTA-5042-1996-1400-1577-RTA" />
-
-	<meta property="og:url" content="https://hanime1.me/download?v=84720" />
-	<meta property="og:type" content="article" />
-	<meta property="og:title" content="下載 [中字後補] 魔騎夜談 2 - Hanime1.me" />
-	<meta property="og:description" content="ナイトテール 第二話 この人、夢に出てきた人だ！ [中字後補] 夢魔を倒すもの、ナイトテールとして人々を守っている夜。
-ちょっぴり恥ずかしい目に遭ったものの、今回も無事に夢魔を倒すことができたのだった。
-夢魔退治で疲れた夜は、火照った身体を鎮めるべく、自らの身体を慰める。
-はしたないとは思いつつも好奇心を抑えきれないお年頃。
-その指先は激しくなる一方だった。
-そんなことをしていればエッチな夢も見ちゃうもの。
-夜の旺盛な好奇心は、夢でお尻の穴でのプレイを再現する。
-当たり前の羞恥心、止めどない性への興味、そして感じたことのない背徳感。
-彼女はますます深みにハマってしまう。
-ところで、この人前にどこかで見なかった？
-「あら、改めて言われると恥ずかしいですね」
-ドキドキな夢魔退治は「夜」にお任せ！
-でも……「夜」の中にいるモンモンな淫魔はどうすればいいの？" />
-	<meta property="og:image"
-		content="https://vdownload.hembed.com/image/thumbnail/WdQ34oOh.jpg?secure=JV7-DzeYCpjCVWPL8HfiAA==,1703989809" />
-
-	<title>下載 [中字後補] 魔騎夜談 2&nbsp;-&nbsp;H動漫/裏番/線上看&nbsp;-&nbsp;Hanime1.me</title>
-	<meta name="title" content="下載 [中字後補] 魔騎夜談 2 - H動漫/裏番/線上看 - Hanime1.me">
-	<meta name="description" content="ナイトテール 第二話 この人、夢に出てきた人だ！ [中字後補] 夢魔を倒すもの、ナイトテールとして人々を守っている夜。
-ちょっぴり恥ずかしい目に遭ったものの、今回も無事に夢魔を倒すことができたのだった。
-夢魔退治で疲れた夜は、火照った身体を鎮めるべく、自らの身体を慰める。
-はしたないとは思いつつも好奇心を抑えきれないお年頃。
-その指先は激しくなる一方だった。
-そんなことをしていればエッチな夢も見ちゃうもの。
-夜の旺盛な好奇心は、夢でお尻の穴でのプレイを再現する。
-当たり前の羞恥心、止めどない性への興味、そして感じたことのない背徳感。
-彼女はますます深みにハマってしまう。
-ところで、この人前にどこかで見なかった？
-「あら、改めて言われると恥ずかしいですね」
-ドキドキな夢魔退治は「夜」にお任せ！
-でも……「夜」の中にいるモンモンな淫魔はどうすればいいの？">
-
-	<meta name="title" content="Hanime1.me - H動漫/裏番/線上看">
-	<title>Hanime1.me - H動漫/裏番/線上看</title>
-	<meta name="description" content="Hanime1.me 帶給你最完美的H動漫、H動畫、裏番、里番、成人色情卡通片的線上看體驗，絕對沒有天殺的片頭廣告！">
-
-	<!-- CSRF Token -->
-	<meta name="csrf-token" content="mT40Kc9KtzqxlIUZaIq7CkvnVifgwQIqi24TRqun">
-
 	<!-- Styles -->
 	<link href="/css/app.css?id=bccf8b8fa56b630fefde" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Sharp"
@@ -221,8 +183,7 @@ const doc = `
 										<td class="hidden-xs">N/A</td>
 										<td><a class="exoclick-popunder"
 												style="text-decoration: none; color: white; text-align: center; background-color: crimson; padding: 5px 10px; border-radius: 5px;"
-												href="https://vdownload-45.sb-cd.com/1/5/15197064-480p.mp4?secure=beYk_hjhQ0h_W1V4I2p_4A,1702020698&amp;m=45&amp;d=1&amp;_tid=15197064"
-												download="[中字後補] 魔騎夜談 2">下載</a></td>
+												download="">下載</a></td>
 									</tr>
 									<tr>
 										<td style="text-align: center;">
@@ -235,8 +196,7 @@ const doc = `
 										<td class="hidden-xs">N/A</td>
 										<td><a class="exoclick-popunder"
 												style="text-decoration: none; color: white; text-align: center; background-color: crimson; padding: 5px 10px; border-radius: 5px;"
-												href="https://vdownload-45.sb-cd.com/1/5/15197064-240p.mp4?secure=beYk_hjhQ0h_W1V4I2p_4A,1702020698&amp;m=45&amp;d=1&amp;_tid=15197064"
-												download="[中字後補] 魔騎夜談 2">下載</a></td>
+												">下載</a></td>
 									</tr>
 								</table>
 							</div>
@@ -269,19 +229,3 @@ const doc = `
 </html>
 
 `
-
-func BenchmarkFindTagByNameAttrs(b *testing.B) {
-	d, _ := html.Parse(strings.NewReader(doc))
-
-	for i := 0; i < b.N; i++ {
-		util.FindTagByNameAttrs(d, "table", false, nil)
-	}
-}
-
-func BenchmarkFindTagByRegExp(b *testing.B) {
-	const re = "(<table[^>]*>)(.*?)(.*)(</table>)"
-
-	for i := 0; i < b.N; i++ {
-		util.FindTagByRegExp(doc, re)
-	}
-}

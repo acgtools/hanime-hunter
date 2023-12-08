@@ -15,6 +15,7 @@ var Headers = map[string]string{
 	"User-Agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36",
 }
 
+// Request sent http request to download anime with fake UA
 func Request(method, url string) (*http.Response, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
