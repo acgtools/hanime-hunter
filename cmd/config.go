@@ -17,6 +17,7 @@ type LogConfig struct {
 
 type DLOption struct {
 	OutputDir string
+	Info      bool
 }
 
 type ResolverOpt struct {

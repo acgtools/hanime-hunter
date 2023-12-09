@@ -19,7 +19,7 @@ type Model struct {
 	err   error
 	width int
 	pbs   []*ProgressBar // sorted pbs, cache for View()
-	Mux   sync.Mutex     // protect fields bellow
+	Mux   sync.Mutex     // protect fields below
 	Pbs   map[string]*ProgressBar
 }
 

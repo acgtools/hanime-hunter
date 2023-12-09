@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Downloader struct {
@@ -21,6 +22,7 @@ type Downloader struct {
 
 type Option struct {
 	OutputDir string
+	Info      bool
 }
 
 func NewDownloader(p *tea.Program, opt *Option) *Downloader {
@@ -33,12 +35,26 @@ func NewDownloader(p *tea.Program, opt *Option) *Downloader {
 func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error {
 	videos := resolvers.SortAniVideos(ani.Videos)
 
+	if d.Option.Info {
+		log.Infof("Videos available: %s", SPrintVideosInfo(videos))
+		return nil
+	}
+
 	err := d.save(videos[0], ani.Title, m)
 	if err != nil {
 		return fmt.Errorf("download file: %w", err)
 	}
 
 	return nil
+}
+
+func SPrintVideosInfo(vs []*resolvers.Video) string {
+	var sb strings.Builder
+	for _, v := range vs {
+		sb.WriteString(fmt.Sprintf(" Title: %s, Quality: %s, Ext: %s\n", v.Title, v.Quality, v.Ext))
+	}
+
+	return sb.String()
 }
 
 func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Model) error {

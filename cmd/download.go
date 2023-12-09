@@ -54,6 +54,7 @@ func download(aniURL string, cfg *Config) error {
 
 	d := downloader.NewDownloader(p, &downloader.Option{
 		OutputDir: cfg.DLOpt.OutputDir,
+		Info:      cfg.DLOpt.Info,
 	})
 
 	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
@@ -87,9 +88,12 @@ func download(aniURL string, cfg *Config) error {
 }
 
 func init() {
-	dlCmd.Flags().String("output-dir", "", "output directory")
-	dlCmd.Flags().Bool("series", false, "download full series")
+	dlCmd.Flags().StringP("output-dir", "o", "", "output directory")
+	dlCmd.Flags().BoolP("series", "s", false, "download full series")
+	dlCmd.Flags().BoolP("info", "i", false, "get anime info only")
 
 	_ = viper.BindPFlag("dlopt.outputdir", dlCmd.Flags().Lookup("output-dir"))
+	_ = viper.BindPFlag("dlopt.info", dlCmd.Flags().Lookup("info"))
+
 	_ = viper.BindPFlag("resolveropt.series", dlCmd.Flags().Lookup("series"))
 }
