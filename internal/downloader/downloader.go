@@ -8,6 +8,7 @@ import (
 	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -50,6 +51,13 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 			return fmt.Errorf("create output dirs: %w", err)
 		}
 		fPath = filepath.Join(outputDir, fPath)
+	}
+
+	if f, err := os.Lstat(fPath); err == nil {
+		if f.Size() == v.Size {
+			log.Infof("File %q exists, Skip ...", fPath)
+			return nil
+		}
 	}
 
 	file, err := os.Create(fPath)
