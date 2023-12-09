@@ -6,13 +6,13 @@ repos:
       - id: end-of-file-fixer
       - id: check-added-large-files
 
-#  - repo: local
-#    hooks:
-#      - id: golangci-lint-full
-#        name: golangci-lint-full
-#        description: Fast linters runner for Go. Runs on all files in the repo. Use this hook if you use pre-commit in CI.
-#        entry: golangci-lint run
-#        types: [ go ]
-#        language: golang
-#        require_serial: true
-#        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: golangci-lint-full
+        name: golangci-lint-full
+        description: Fast linters runner for Go. Runs on all files in the repo. Use this hook if you use pre-commit in CI.
+        entry: golangci-lint run
+        types: [ go ]
+        language: golang
+        require_serial: true
+        pass_filenames: false
