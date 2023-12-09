@@ -4,7 +4,7 @@ before:
 
 builds:
   - id: hanime-hunter
-    binary: hanime-hunter
+    binary: hani
     env:
       - CGO_ENABLED=0
     ldflags:

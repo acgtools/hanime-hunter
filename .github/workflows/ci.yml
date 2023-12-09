@@ -1,0 +1,34 @@
+name: CI
+on:
+ workflow_call:
+ push:
+  branches:
+  - main
+ pull_request:
+  branches:
+  - main
+
+permissions:
+  contents: read
+
+jobs:
+ ci:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Set up Go
+    uses: actions/setup-go@v4
+    with:
+      go-version-file: go.mod
+      cache: false
+
+  - name: Run golangci-lint
+    uses: golangci/golangci-lint-action@v3.7.0
+    with:
+      version: v1.54
+      args: --verbose --timeout=3m --issues-exit-code=1
+
+  - name: Test
+    run: go test -v ./... -race -covermode=atomic
