@@ -40,7 +40,7 @@ func (r *ResolverMap) Register(domain string, resolver Resolver) {
 func Resolve(u string, opt *Option) ([]*HAnime, error) {
 	urlRes, err := url.Parse(u)
 	if err != nil {
-		return nil, fmt.Errorf("resolve url: %w", err)
+		return nil, fmt.Errorf("resolve url %q: %w", u, err)
 	}
 
 	domain := urlRes.Host

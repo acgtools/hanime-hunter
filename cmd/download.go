@@ -44,7 +44,7 @@ func download(aniURL string, cfg *Config) error {
 		PlayList: cfg.ResolverOpt.PlayList,
 	})
 	if err != nil {
-		return fmt.Errorf("resolve download info: %w", err)
+		return err //nolint:wrapcheck
 	}
 
 	m := &progressbar.Model{
@@ -71,7 +71,7 @@ func download(aniURL string, cfg *Config) error {
 
 			err := d.Download(ani, m)
 			if err != nil {
-				return fmt.Errorf("download error: %w", err)
+				return fmt.Errorf("download %q error: %w", ani.Title, err)
 			}
 			return nil
 		}
@@ -88,7 +88,7 @@ func download(aniURL string, cfg *Config) error {
 	}
 
 	if _, err := p.Run(); err != nil {
-		log.Errorf("Open progress bar %v", err)
+		log.Errorf("Start progress bar %v", err)
 	}
 
 	return group.Wait() //nolint:wrapcheck

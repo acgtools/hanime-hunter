@@ -34,12 +34,12 @@ type resolver struct{}
 func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnime, error) {
 	site, vid, err := getSiteAndVID(u)
 	if err != nil {
-		return nil, fmt.Errorf("parse url: %w", err)
+		return nil, fmt.Errorf("parse url %q: %w", u, err)
 	}
 
 	title, series, err := getAniInfo(u)
 	if err != nil {
-		return nil, fmt.Errorf("get ani info: %w", err)
+		return nil, fmt.Errorf("get anime info from %q: %w", u, err)
 	}
 
 	log.Infof("Anime found: %s, Searching episodes, Please wait a moment...", title)
@@ -49,7 +49,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 	if !opt.Series {
 		videos, eps, err := getDLInfo(vid)
 		if err != nil {
-			return nil, fmt.Errorf("get download info: %w", err)
+			return nil, fmt.Errorf("get download info of %q: %w", vid, err)
 		}
 
 		log.Infof("Episodes found: %q", eps[0])
@@ -67,7 +67,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 			_, vID, _ := getSiteAndVID(s) // no need to check err
 			videos, eps, err := getDLInfo(vID)
 			if err != nil {
-				return nil, fmt.Errorf("get download info: %w", err)
+				return nil, fmt.Errorf("get download info of %q: %w", vID, err)
 			}
 
 			titles = append(titles, eps[0])
@@ -89,7 +89,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 func getSiteAndVID(u string) (string, string, error) {
 	urlRes, err := url.Parse(u)
 	if err != nil {
-		return "", "", fmt.Errorf("parse url: %w", err)
+		return "", "", fmt.Errorf("parse url %q: %w", u, err)
 	}
 
 	vid, ok := urlRes.Query()["v"]
@@ -102,7 +102,7 @@ func getSiteAndVID(u string) (string, string, error) {
 func getAniInfo(u string) (string, []string, error) {
 	doc, err := getAniPage(u)
 	if err != nil {
-		return "", nil, fmt.Errorf("get ani page: %w", err)
+		return "", nil, fmt.Errorf("get ani page %q: %w", u, err)
 	}
 
 	series := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "id", Val: "video-playlist-wrapper"}})
@@ -123,7 +123,7 @@ func getAniPage(u string) (*html.Node, error) {
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("get anime info page: %w", err)
+		return nil, fmt.Errorf("parse anime info page %q to HTML doc: %w", u, err)
 	}
 
 	return doc, nil
@@ -192,14 +192,14 @@ const ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Geck
 func getVideoInfo(u string) (int64, string, error) {
 	resp, err := request(http.MethodGet, u)
 	if err != nil {
-		return 0, "", fmt.Errorf("get dl info: %w", err)
+		return 0, "", fmt.Errorf("get dl info from %q: %w", u, err)
 	}
 	defer resp.Body.Close()
 
 	ext := strings.Split(resp.Header.Get("Content-Type"), "/")[1]
 	size, err := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
 	if err != nil {
-		return 0, "", fmt.Errorf("get video size: %w", err)
+		return 0, "", fmt.Errorf("get video size from %q: %w", u, err)
 	}
 
 	return size, ext, nil
@@ -221,7 +221,7 @@ func getDLPage(vid string) (*html.Node, error) {
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("parse html: %w", err)
+		return nil, fmt.Errorf("parse html of %q: %w", u, err)
 	}
 
 	return doc, nil
@@ -232,14 +232,14 @@ func request(method string, u string) (*http.Response, error) {
 
 	req, err := http.NewRequest(method, u, nil) //nolint:noctx
 	if err != nil {
-		return nil, fmt.Errorf("create http request: %w", err)
+		return nil, fmt.Errorf("create http request for %q: %w", u, err)
 	}
 
 	req.Header.Set("User-Agent", ua)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("send http request: %w", err)
+		return nil, fmt.Errorf("send http request to %q: %w", u, err)
 	}
 
 	return resp, nil
