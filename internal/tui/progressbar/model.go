@@ -13,7 +13,7 @@ type ProgressMsg struct {
 	Ratio    float64
 }
 
-type progressErrMsg struct{ err error }
+type ProgressErrMsg struct{ Err error }
 
 type Model struct {
 	err   error
@@ -44,7 +44,7 @@ func (pw *ProgressWriter) Start(p *tea.Program) {
 	// TeeReader calls PW.Write() each time a new response is received
 	_, err := io.Copy(pw.File, io.TeeReader(pw.Reader, pw))
 	if err != nil {
-		p.Send(progressErrMsg{err})
+		p.Send(ProgressErrMsg{err})
 	}
 }
 

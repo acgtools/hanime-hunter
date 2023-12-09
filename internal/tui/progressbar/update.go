@@ -26,8 +26,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = w
 		return m, nil
 
-	case progressErrMsg:
-		m.err = msg.err
+	case ProgressErrMsg:
+		m.err = msg.Err
 		return m, tea.Quit
 
 	case ProgressMsg:

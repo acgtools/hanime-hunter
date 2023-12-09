@@ -75,7 +75,11 @@ func download(aniURL string, cfg *Config) error {
 		}
 	}
 
-	log.Info("Start downloading ...")
+	if d.Option.Info {
+		log.Infof("Start fetching anime info")
+	} else {
+		log.Info("Start downloading ...")
+	}
 
 	for _, ani := range anis {
 		group.Go(dl(ani, m))

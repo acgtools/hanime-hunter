@@ -48,6 +48,7 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 
 	err := d.save(video, ani.Title, m)
 	if err != nil {
+		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return fmt.Errorf("download file: %w", err)
 	}
 
@@ -69,6 +70,7 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	outputDir := filepath.Join(d.Option.OutputDir, aniTitle)
 	err := os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
+		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return err
 	}
 	fPath = filepath.Join(outputDir, fPath)
@@ -82,12 +84,14 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 
 	file, err := os.Create(fPath)
 	if err != nil {
+		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return fmt.Errorf("create file %q: %w", fPath, err)
 	}
 	defer file.Close()
 
 	resp, err := request.Request(http.MethodGet, v.URL)
 	if err != nil {
+		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return fmt.Errorf("download file: %w", err)
 	}
 	defer resp.Body.Close()
