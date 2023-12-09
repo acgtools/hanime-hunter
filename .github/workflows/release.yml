@@ -28,7 +28,7 @@ jobs:
       - name: Release
         env:
           Version: $GITHUB_REF_NAME
-          GITHUB_TOKEN: ${{ secrets.ACG_TOOL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACG_TOOLS_TOKEN }}
 
         uses: goreleaser/goreleaser-action@v5
         with:
