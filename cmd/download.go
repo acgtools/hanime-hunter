@@ -1,12 +1,19 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/acgtools/hanime-hunter/internal/downloader"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
+	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
+	"runtime"
+	"sync"
 )
 
 var dlCmd = &cobra.Command{
@@ -39,18 +46,44 @@ func download(aniURL string, cfg *Config) error {
 		return err
 	}
 
-	d := downloader.NewDownloader(&downloader.Option{
+	m := &progressbar.Model{
+		Mux: sync.Mutex{},
+		Pbs: make(map[string]*progressbar.ProgressBar),
+	}
+	p := tea.NewProgram(m)
+
+	d := downloader.NewDownloader(p, &downloader.Option{
 		OutputDir: cfg.DLOpt.OutputDir,
 	})
 
-	for _, ani := range anis {
-		err = d.Download(ani)
-		if err != nil {
-			return fmt.Errorf("download error: %w", err)
+	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
+	group, ctx := errgroup.WithContext(context.Background())
+	dl := func(ani *resolvers.HAnime, m *progressbar.Model) func() error {
+		return func() error {
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return err
+			}
+			defer sem.Release(1)
+
+			err := d.Download(ani, m)
+			if err != nil {
+				return fmt.Errorf("download error: %w", err)
+			}
+			return nil
 		}
 	}
 
-	return nil
+	log.Info("Start downloading ...")
+
+	for _, ani := range anis {
+		group.Go(dl(ani, m))
+	}
+
+	if _, err := p.Run(); err != nil {
+		log.Errorf("Open progress bar %v", err)
+	}
+
+	return group.Wait()
 }
 
 func init() {

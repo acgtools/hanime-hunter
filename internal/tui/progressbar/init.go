@@ -1,7 +1,7 @@
-package progress
+package progressbar
 
 import tea "github.com/charmbracelet/bubbletea"
 
-func (m model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return nil
 }

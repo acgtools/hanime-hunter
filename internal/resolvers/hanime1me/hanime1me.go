@@ -41,7 +41,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 		return nil, fmt.Errorf("get ani info: %w", err)
 	}
 
-	log.Info("Anime Info", "title", title)
+	log.Infof("Anime found: %s, Searching episodes, Please wait a moment...", title)
 
 	res := make([]*resolvers.HAnime, 0)
 

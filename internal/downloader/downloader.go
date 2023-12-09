@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"github.com/acgtools/hanime-hunter/internal/request"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
-	"github.com/acgtools/hanime-hunter/internal/tui/progress"
-	"github.com/charmbracelet/log"
+	"github.com/acgtools/hanime-hunter/internal/tui/color"
+	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
+	"github.com/charmbracelet/bubbles/progress"
+	tea "github.com/charmbracelet/bubbletea"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
 type Downloader struct {
+	p      *tea.Program
 	Option *Option
 }
 
@@ -19,19 +23,17 @@ type Option struct {
 	OutputDir string
 }
 
-func NewDownloader(opt *Option) *Downloader {
+func NewDownloader(p *tea.Program, opt *Option) *Downloader {
 	return &Downloader{
+		p:      p,
 		Option: opt,
 	}
 }
 
-func (d *Downloader) Download(ani *resolvers.HAnime) error {
+func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error {
 	videos := resolvers.SortAniVideos(ani.Videos)
 
-	v := videos[0]
-	log.Info("Start Downloading: ", "title", v.Title, "quality", v.Quality, "extension", v.Ext)
-
-	err := d.save(videos[0])
+	err := d.save(videos[0], m)
 	if err != nil {
 		return fmt.Errorf("download file: %w", err)
 	}
@@ -39,7 +41,7 @@ func (d *Downloader) Download(ani *resolvers.HAnime) error {
 	return nil
 }
 
-func (d *Downloader) save(v *resolvers.Video) error {
+func (d *Downloader) save(v *resolvers.Video, m *progressbar.Model) error {
 	fPath := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
 
 	if d.Option.OutputDir != "" {
@@ -63,10 +65,34 @@ func (d *Downloader) save(v *resolvers.Video) error {
 	}
 	defer resp.Body.Close()
 
-	err = progress.StartProgressBar(resp, file)
-	if err != nil {
-		return fmt.Errorf("start progress bar: %w", err)
+	fileName := filepath.Base(file.Name())
+
+	pw := &progressbar.ProgressWriter{
+		Total:    resp.ContentLength,
+		File:     file,
+		Reader:   resp.Body,
+		FileName: fileName,
+		OnProgress: func(fileName string, ratio float64) {
+			d.p.Send(progressbar.ProgressMsg{
+				FileName: fileName,
+				Ratio:    ratio,
+			})
+		},
 	}
+
+	colors := color.PbColors[rand.Intn(8)]
+
+	pb := &progressbar.ProgressBar{
+		Pw:       pw,
+		Progress: progress.New(progress.WithScaledGradient(colors[0], colors[1])),
+		FileName: fileName,
+	}
+
+	m.Mux.Lock()
+	m.Pbs[fileName] = pb
+	m.Mux.Unlock()
+
+	pw.Start(d.p)
 
 	return nil
 }
