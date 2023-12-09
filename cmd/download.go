@@ -54,6 +54,7 @@ func download(aniURL string, cfg *Config) error {
 
 	d := downloader.NewDownloader(p, &downloader.Option{
 		OutputDir: cfg.DLOpt.OutputDir,
+		Quality:   cfg.DLOpt.Quality,
 		Info:      cfg.DLOpt.Info,
 	})
 
@@ -89,10 +90,13 @@ func download(aniURL string, cfg *Config) error {
 
 func init() {
 	dlCmd.Flags().StringP("output-dir", "o", "", "output directory")
+	dlCmd.Flags().StringP("quality", "q", "", "specify video quality. e.g. 1080p, 720p, 480p ...")
+
 	dlCmd.Flags().BoolP("series", "s", false, "download full series")
 	dlCmd.Flags().BoolP("info", "i", false, "get anime info only")
 
 	_ = viper.BindPFlag("dlopt.outputdir", dlCmd.Flags().Lookup("output-dir"))
+	_ = viper.BindPFlag("dlopt.quality", dlCmd.Flags().Lookup("quality"))
 	_ = viper.BindPFlag("dlopt.info", dlCmd.Flags().Lookup("info"))
 
 	_ = viper.BindPFlag("resolveropt.series", dlCmd.Flags().Lookup("series"))

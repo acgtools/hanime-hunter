@@ -17,6 +17,7 @@ type LogConfig struct {
 
 type DLOption struct {
 	OutputDir string
+	Quality   string
 	Info      bool
 }
 

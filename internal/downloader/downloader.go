@@ -22,6 +22,7 @@ type Downloader struct {
 
 type Option struct {
 	OutputDir string
+	Quality   string
 	Info      bool
 }
 
@@ -40,7 +41,12 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 		return nil
 	}
 
-	err := d.save(videos[0], ani.Title, m)
+	video := videos[0] // by default, download the highest quality
+	if d.Option.Quality != "" {
+		video = ani.Videos[strings.ToLower(d.Option.Quality)]
+	}
+
+	err := d.save(video, ani.Title, m)
 	if err != nil {
 		return fmt.Errorf("download file: %w", err)
 	}
