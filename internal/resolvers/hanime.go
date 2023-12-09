@@ -18,16 +18,22 @@ type Video struct {
 	Ext     string
 }
 
-func SortAniVideos(videos map[string]*Video) []*Video {
+func SortAniVideos(videos map[string]*Video, asc bool) []*Video {
 	res := make([]*Video, 0, len(videos))
 
 	for _, v := range videos {
 		res = append(res, v)
 	}
 
-	sort.SliceStable(res, func(i, j int) bool {
-		return res[i].Size > res[j].Size
-	})
+	if asc {
+		sort.SliceStable(res, func(i, j int) bool {
+			return res[i].Size < res[j].Size
+		})
+	} else {
+		sort.SliceStable(res, func(i, j int) bool {
+			return res[i].Size > res[j].Size
+		})
+	}
 
 	return res
 }

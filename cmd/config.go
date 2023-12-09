@@ -16,9 +16,10 @@ type LogConfig struct {
 }
 
 type DLOption struct {
-	OutputDir string
-	Quality   string
-	Info      bool
+	OutputDir  string
+	Quality    string
+	Info       bool
+	LowQuality bool
 }
 
 type ResolverOpt struct {

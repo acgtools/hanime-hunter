@@ -2,13 +2,14 @@ package color
 
 import (
 	"github.com/lucasb-eyer/go-colorful"
+	"math/rand"
 	"sync/atomic"
 )
 
 var PbColors = newPbColor()
 
 type PbColor struct {
-	idx    atomic.Int32
+	idx    *atomic.Int32
 	colors [][]string
 }
 
@@ -18,8 +19,11 @@ const (
 )
 
 func newPbColor() PbColor {
+	i := &atomic.Int32{}
+	i.Store(rand.Int31())
+
 	return PbColor{
-		idx:    atomic.Int32{},
+		idx:    i,
 		colors: colorGrid(defaultColorX, defaultColorY),
 	}
 }

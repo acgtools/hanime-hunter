@@ -21,9 +21,10 @@ type Downloader struct {
 }
 
 type Option struct {
-	OutputDir string
-	Quality   string
-	Info      bool
+	OutputDir  string
+	Quality    string
+	Info       bool
+	LowQuality bool
 }
 
 func NewDownloader(p *tea.Program, opt *Option) *Downloader {
@@ -34,7 +35,7 @@ func NewDownloader(p *tea.Program, opt *Option) *Downloader {
 }
 
 func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error {
-	videos := resolvers.SortAniVideos(ani.Videos)
+	videos := resolvers.SortAniVideos(ani.Videos, d.Option.LowQuality)
 
 	if d.Option.Info {
 		log.Infof("Videos available: %s", SPrintVideosInfo(videos))

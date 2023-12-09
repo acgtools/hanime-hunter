@@ -171,6 +171,7 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 		}
 
 		episodes = append(episodes, title)
+		log.Debugf("Episode found: %s - %s - %s", title, quality, ext)
 
 		vidMap[quality] = &resolvers.Video{
 			ID:      id,

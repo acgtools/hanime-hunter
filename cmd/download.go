@@ -53,9 +53,10 @@ func download(aniURL string, cfg *Config) error {
 	p := tea.NewProgram(m)
 
 	d := downloader.NewDownloader(p, &downloader.Option{
-		OutputDir: cfg.DLOpt.OutputDir,
-		Quality:   cfg.DLOpt.Quality,
-		Info:      cfg.DLOpt.Info,
+		OutputDir:  cfg.DLOpt.OutputDir,
+		Quality:    cfg.DLOpt.Quality,
+		Info:       cfg.DLOpt.Info,
+		LowQuality: cfg.DLOpt.LowQuality,
 	})
 
 	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
@@ -98,10 +99,12 @@ func init() {
 
 	dlCmd.Flags().BoolP("series", "s", false, "download full series")
 	dlCmd.Flags().BoolP("info", "i", false, "get anime info only")
+	dlCmd.Flags().Bool("low-quality", false, "download the lowest quality video")
 
-	_ = viper.BindPFlag("dlopt.outputdir", dlCmd.Flags().Lookup("output-dir"))
-	_ = viper.BindPFlag("dlopt.quality", dlCmd.Flags().Lookup("quality"))
-	_ = viper.BindPFlag("dlopt.info", dlCmd.Flags().Lookup("info"))
+	_ = viper.BindPFlag("DLOpt.OutputDir", dlCmd.Flags().Lookup("output-dir"))
+	_ = viper.BindPFlag("DLOpt.Quality", dlCmd.Flags().Lookup("quality"))
+	_ = viper.BindPFlag("DLOpt.Info", dlCmd.Flags().Lookup("info"))
+	_ = viper.BindPFlag("DLOpt.LowQuality", dlCmd.Flags().Lookup("low-quality"))
 
-	_ = viper.BindPFlag("resolveropt.series", dlCmd.Flags().Lookup("series"))
+	_ = viper.BindPFlag("ResolverOpt.Series", dlCmd.Flags().Lookup("series"))
 }
