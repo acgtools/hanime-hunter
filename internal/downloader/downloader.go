@@ -38,7 +38,7 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 	videos := resolvers.SortAniVideos(ani.Videos, d.Option.LowQuality)
 
 	if d.Option.Info {
-		log.Infof("Videos available: %s", SPrintVideosInfo(videos))
+		log.Infof("Videos available:\n%s", SPrintVideosInfo(videos))
 		return nil
 	}
 
