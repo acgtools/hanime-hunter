@@ -8,7 +8,6 @@ import (
 	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -33,7 +32,7 @@ func NewDownloader(p *tea.Program, opt *Option) *Downloader {
 func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error {
 	videos := resolvers.SortAniVideos(ani.Videos)
 
-	err := d.save(videos[0], m)
+	err := d.save(videos[0], ani.Title, m)
 	if err != nil {
 		return fmt.Errorf("download file: %w", err)
 	}
@@ -41,11 +40,11 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 	return nil
 }
 
-func (d *Downloader) save(v *resolvers.Video, m *progressbar.Model) error {
+func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Model) error {
 	fPath := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
 
 	if d.Option.OutputDir != "" {
-		outputDir := d.Option.OutputDir
+		outputDir := filepath.Join(d.Option.OutputDir, aniTitle)
 		err := os.MkdirAll(outputDir, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("create output dirs: %w", err)
@@ -80,11 +79,11 @@ func (d *Downloader) save(v *resolvers.Video, m *progressbar.Model) error {
 		},
 	}
 
-	colors := color.PbColors[rand.Intn(8)]
+	colors := color.PbColors.Colors()
 
 	pb := &progressbar.ProgressBar{
 		Pw:       pw,
-		Progress: progress.New(progress.WithScaledGradient(colors[0], colors[1])),
+		Progress: progress.New(progress.WithGradient(colors[0], colors[1])),
 		FileName: fileName,
 	}
 

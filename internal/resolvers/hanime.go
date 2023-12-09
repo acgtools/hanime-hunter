@@ -26,7 +26,7 @@ func SortAniVideos(videos map[string]*Video) []*Video {
 	}
 
 	sort.SliceStable(res, func(i, j int) bool {
-		return res[i].Size > res[j].Size
+		return res[i].Size < res[j].Size
 	})
 
 	return res

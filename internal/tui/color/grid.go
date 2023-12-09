@@ -1,8 +1,34 @@
 package color
 
-import "github.com/lucasb-eyer/go-colorful"
+import (
+	"github.com/lucasb-eyer/go-colorful"
+	"sync/atomic"
+)
 
-var PbColors = colorGrid(14, 8)
+var PbColors = newPbColor()
+
+type PbColor struct {
+	idx    atomic.Int32
+	colors [][]string
+}
+
+const (
+	defaultColorX = 14
+	defaultColorY = 8
+)
+
+func newPbColor() PbColor {
+	return PbColor{
+		idx:    atomic.Int32{},
+		colors: colorGrid(defaultColorX, defaultColorY),
+	}
+}
+
+func (p *PbColor) Colors() []string {
+	p.idx.Add(1)
+	i := p.idx.Load() % 8
+	return p.colors[i]
+}
 
 func colorGrid(xSteps, ySteps int) [][]string {
 	x0y0, _ := colorful.Hex("#F25D94")

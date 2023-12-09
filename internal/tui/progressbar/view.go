@@ -32,7 +32,7 @@ func (m *Model) View() string {
 			pad, getDLStatus(pb.Pw.Downloaded, pb.Pw.Total),
 			pad, pb.FileName)
 
-		sb.WriteString("\n\n")
+		sb.WriteString("\n")
 		sb.WriteString(pbStyle(bar))
 	}
 
