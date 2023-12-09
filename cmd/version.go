@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"runtime"
+	"time"
+
+	"github.com/charmbracelet/log"
+	"github.com/spf13/cobra"
 )
 
 var version = "unknown"
@@ -15,6 +18,9 @@ var verCmd = &cobra.Command{
 		goVersion := runtime.Version()
 		platform := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
 
-		fmt.Printf("Version: %s, Go: %s, Platform: %s", version, goVersion, platform)
+		log.SetTimeFunction(func() time.Time {
+			return time.Time{}
+		})
+		log.Printf("Version: %s, Go: %s, Platform: %s", version, goVersion, platform)
 	},
 }

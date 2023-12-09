@@ -1,8 +1,9 @@
 package util
 
 import (
-	"golang.org/x/net/html"
 	"regexp"
+
+	"golang.org/x/net/html"
 )
 
 func FindTagByNameAttrs(node *html.Node, name string, useAttr bool, attrs []html.Attribute) []*html.Node {

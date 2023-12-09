@@ -5,10 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/acgtools/hanime-hunter/internal/resolvers"
-	"github.com/acgtools/hanime-hunter/pkg/util"
-	"github.com/charmbracelet/log"
-	"golang.org/x/net/html"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,6 +12,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/acgtools/hanime-hunter/internal/resolvers"
+	"github.com/acgtools/hanime-hunter/pkg/util"
+	"github.com/charmbracelet/log"
+	"golang.org/x/net/html"
 )
 
 func init() {
@@ -213,6 +214,9 @@ func getDLPage(vid string) (*html.Node, error) {
 	u := "https://hanime1.me/download?v=" + vid
 
 	resp, err := request(http.MethodGet, u)
+	if err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
@@ -226,7 +230,7 @@ func getDLPage(vid string) (*html.Node, error) {
 func request(method string, u string) (*http.Response, error) {
 	client := newClient()
 
-	req, err := http.NewRequest(method, u, nil)
+	req, err := http.NewRequest(method, u, nil) //nolint:noctx
 	if err != nil {
 		return nil, fmt.Errorf("create http request: %w", err)
 	}
@@ -242,11 +246,11 @@ func request(method string, u string) (*http.Response, error) {
 }
 
 func newClient() *http.Client {
-	tlsConfig := http.DefaultTransport.(*http.Transport).TLSClientConfig
+	tlsConfig := http.DefaultTransport.(*http.Transport).TLSClientConfig //nolint:forcetypeassert
 
 	c := &http.Client{
 		Transport: &http.Transport{
-			TLSHandshakeTimeout: 30 * time.Second,
+			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
 			DisableKeepAlives:   false,
 
 			Proxy: http.ProxyFromEnvironment,
@@ -257,13 +261,13 @@ func newClient() *http.Client {
 					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 					tls.TLS_AES_128_GCM_SHA256,
-					tls.VersionTLS13,
+					tls.VersionTLS13, //nolint:gosec
 					tls.VersionTLS10,
 				},
 			},
 			DialTLSContext: func(_ context.Context, network, addr string) (net.Conn, error) {
 				conn, err := tls.Dial(network, addr, tlsConfig)
-				return conn, err
+				return conn, err //nolint:wrapcheck
 			},
 		},
 	}

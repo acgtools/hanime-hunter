@@ -36,3 +36,6 @@ issues:
         - funlen
         - govet
         - cyclop
+    - path: cmd/register.go
+      linters:
+        - revive

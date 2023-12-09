@@ -2,9 +2,10 @@ package resolvers
 
 import (
 	"fmt"
-	"github.com/charmbracelet/log"
 	"net/url"
 	"sync"
+
+	"github.com/charmbracelet/log"
 )
 
 type Resolver interface {
@@ -39,7 +40,7 @@ func (r *ResolverMap) Register(domain string, resolver Resolver) {
 func Resolve(u string, opt *Option) ([]*HAnime, error) {
 	urlRes, err := url.Parse(u)
 	if err != nil {
-		return nil, fmt.Errorf("resovle url: %w", err)
+		return nil, fmt.Errorf("resolve url: %w", err)
 	}
 
 	domain := urlRes.Host
@@ -48,5 +49,5 @@ func Resolve(u string, opt *Option) ([]*HAnime, error) {
 
 	resolver := Resolvers.resolvers[domain]
 
-	return resolver.Resolve(u, opt)
+	return resolver.Resolve(u, opt) //nolint:wrapcheck
 }

@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"runtime"
+	"sync"
+
 	"github.com/acgtools/hanime-hunter/internal/downloader"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
 	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
@@ -12,8 +15,6 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
-	"runtime"
-	"sync"
 )
 
 var dlCmd = &cobra.Command{
@@ -43,7 +44,7 @@ func download(aniURL string, cfg *Config) error {
 		PlayList: cfg.ResolverOpt.PlayList,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve download info: %w", err)
 	}
 
 	m := &progressbar.Model{
@@ -64,7 +65,7 @@ func download(aniURL string, cfg *Config) error {
 	dl := func(ani *resolvers.HAnime, m *progressbar.Model) func() error {
 		return func() error {
 			if err := sem.Acquire(ctx, 1); err != nil {
-				return err
+				return fmt.Errorf("goroutine download %q acquire semaphore: %w", ani.Title, err)
 			}
 			defer sem.Release(1)
 
@@ -90,7 +91,7 @@ func download(aniURL string, cfg *Config) error {
 		log.Errorf("Open progress bar %v", err)
 	}
 
-	return group.Wait()
+	return group.Wait() //nolint:wrapcheck
 }
 
 func init() {

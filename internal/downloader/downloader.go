@@ -2,6 +2,11 @@ package downloader
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/acgtools/hanime-hunter/internal/request"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
 	"github.com/acgtools/hanime-hunter/internal/tui/color"
@@ -9,10 +14,6 @@ import (
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 type Downloader struct {
@@ -74,7 +75,7 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	err := os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
 		d.p.Send(progressbar.ProgressErrMsg{Err: err})
-		return err
+		return fmt.Errorf("create download dir: %w", err)
 	}
 	fPath = filepath.Join(outputDir, fPath)
 
@@ -101,6 +102,18 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 
 	fileName := filepath.Base(file.Name())
 
+	pb := progressBar(d, resp, file, fileName)
+
+	m.Mux.Lock()
+	m.Pbs[fileName] = pb
+	m.Mux.Unlock()
+
+	pb.Pw.Start(d.p)
+
+	return nil
+}
+
+func progressBar(d *Downloader, resp *http.Response, file *os.File, fileName string) *progressbar.ProgressBar {
 	pw := &progressbar.ProgressWriter{
 		Total:    resp.ContentLength,
 		File:     file,
@@ -122,11 +135,5 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 		FileName: fileName,
 	}
 
-	m.Mux.Lock()
-	m.Pbs[fileName] = pb
-	m.Mux.Unlock()
-
-	pw.Start(d.p)
-
-	return nil
+	return pb
 }

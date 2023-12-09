@@ -1,11 +1,12 @@
 package progressbar
 
 import (
-	"github.com/charmbracelet/bubbles/progress"
-	tea "github.com/charmbracelet/bubbletea"
 	"io"
 	"os"
 	"sync"
+
+	"github.com/charmbracelet/bubbles/progress"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type ProgressMsg struct {

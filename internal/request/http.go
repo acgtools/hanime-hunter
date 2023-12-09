@@ -21,13 +21,13 @@ func Request(method, url string) (*http.Response, error) {
 		Transport: &http.Transport{
 			Proxy:               http.ProxyFromEnvironment,
 			DisableCompression:  true,
-			TLSHandshakeTimeout: 10 * time.Second,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+			TLSHandshakeTimeout: 10 * time.Second,                      //nolint:gomnd
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 		},
-		Timeout: 15 * time.Minute,
+		Timeout: 15 * time.Minute, //nolint:gomnd
 	}
 
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, url, nil) //nolint:noctx
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}

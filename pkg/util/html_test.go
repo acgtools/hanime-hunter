@@ -1,10 +1,11 @@
 package util_test
 
 import (
-	"github.com/acgtools/hanime-hunter/pkg/util"
-	"golang.org/x/net/html"
 	"strings"
 	"testing"
+
+	"github.com/acgtools/hanime-hunter/pkg/util"
+	"golang.org/x/net/html"
 )
 
 func BenchmarkFindTagByNameAttrs(b *testing.B) {

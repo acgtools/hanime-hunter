@@ -10,7 +10,7 @@ const (
 	maxWidth = 80
 )
 
-func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) { //nolint:cyclop
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyCtrlC {
@@ -19,7 +19,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.WindowSizeMsg:
-		w := msg.Width - padding*2 - 4
+		w := msg.Width - padding*2 - 4 //nolint:gomnd
 		if w >= maxWidth {
 			w = maxWidth
 		}
@@ -45,7 +45,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		for _, pb := range m.Pbs {
 			progressModel, cmd := pb.Progress.Update(msg)
-			pb.Progress = progressModel.(progress.Model)
+			pbm, ok := progressModel.(progress.Model)
+			if ok {
+				pb.Progress = pbm
+			}
 			cmds = append(cmds, cmd)
 		}
 

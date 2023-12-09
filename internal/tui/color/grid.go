@@ -1,9 +1,10 @@
 package color
 
 import (
-	"github.com/lucasb-eyer/go-colorful"
 	"math/rand"
 	"sync/atomic"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 var PbColors = newPbColor()
@@ -20,7 +21,8 @@ const (
 
 func newPbColor() PbColor {
 	i := &atomic.Int32{}
-	i.Store(rand.Int31())
+	// no need to use secure random generator
+	i.Store(rand.Int31()) //nolint:gosec
 
 	return PbColor{
 		idx:    i,
@@ -30,7 +32,7 @@ func newPbColor() PbColor {
 
 func (p *PbColor) Colors() []string {
 	p.idx.Add(1)
-	i := p.idx.Load() % 8
+	i := p.idx.Load() % 8 //nolint:gomnd
 	return p.colors[i]
 }
 
@@ -53,7 +55,7 @@ func colorGrid(xSteps, ySteps int) [][]string {
 	grid := make([][]string, ySteps)
 	for x := 0; x < ySteps; x++ {
 		y0 := x0[x]
-		grid[x] = make([]string, 2)
+		grid[x] = make([]string, 2) //nolint:gomnd
 		grid[x][0] = y0.BlendLuv(x1[x], float64(0)/float64(xSteps)).Hex()
 		grid[x][1] = y0.BlendLuv(x1[x], float64(xSteps-1)/float64(xSteps)).Hex()
 	}
