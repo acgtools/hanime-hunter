@@ -8,6 +8,8 @@ If this repo is helpful to you, please consider giving it a star (o゜▽゜)o�
 
 > Random Wink OvO
 
+<!-- If you want to deploy your own service for random waifu. Check: https://github.com/dreamjz/waifu-getter -->
+
 <img src="https://waifu-getter.vercel.app/sfw?eps=wink" />
 
 <br />
@@ -113,20 +115,38 @@ Global Flags:
 
 ### Only one episode
 
+The default quality will be the highest quality.
+
 ```sh
 # Download from the watch page
 # The anime will be saved in ./anime_series_title/
 $ hani dl https://hanime1.me/watch?v=xxxx
 ```
 
+![](./docs/assets/single_file.gif)
+
 ### Full series based on the specified episode
 
 ```sh
 # Download the full series
-# E.g. If you give the link of the Anime_Foo_02
+# E.g. If you provide the link of the Anime_Foo_02
 # then the full series of Anime_Foo will be downloaded (Anime_Foo_01, Anime_Foo_02, ...)
 $ hani dl -s https://hanime1.me/watch?v=xxxx
 ```
+
+![](./docs/assets/series.gif)
+
+![](./docs/assets/series_2.gif)
+
+#### Skip downloaded files
+
+If some files get stuck during downloading, stop the program and then restart the download.
+
+It will skip the files that have already been downloaded.
+
+![](./docs/assets/dl_stuck.gif)
+
+![](./docs/assets/restart.gif)
 
 ### Specify the output directory
 
@@ -146,7 +166,7 @@ $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 ### Get info only
 
 ```sh
-# Get only the downloadable video info
+# Get only the downloadable video info:
 # title, quality, file extension
 $ hani dl -i https://hanime1.me/watch?v=xxxx
 ```

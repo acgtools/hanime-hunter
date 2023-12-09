@@ -1,12 +1,12 @@
 # hanime-hunter
 
-English | [简体中文](./README_ZH_CN.md)
+用于下载里番的 CLI 工具。
 
-A CLI app to download HAnime.
+如果这个程序对你有所帮助，可以帮忙给一个 star (o゜▽゜)o☆ ，谢谢 OwO。
 
-If this repo is helpful to you, please consider giving it a star (o゜▽゜)o☆ . Thank you OwO.
+> 随机 Wink OvO
 
-> Random Wink OvO
+<!-- If you want to deploy your own service for random waifu. Check: https://github.com/dreamjz/waifu-getter -->
 
 <img src="https://waifu-getter.vercel.app/sfw?eps=wink" />
 
@@ -22,23 +22,23 @@ If this repo is helpful to you, please consider giving it a star (o゜▽゜)o�
 
 [toc]
 
-## Installation
+## 安装
 
-### Using `go`
+### 使用 `go`
 
 ```sh
 $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 ```
 
-### Download from releases
+### 从 releases 页面下载
 
 [release page](https://github.com/acgtools/hanime-hunter/releases)
 
-## Quick Start
+## 快速开始
 
-### Prerequisites
+### 前提条件
 
-#### Ensure that your terminal charset is UTF-8
+#### 确保你的终端字符集为 UTF-8
 
 **Windows**
 
@@ -50,15 +50,15 @@ Active code page: 65001
 > chcp 65001
 ```
 
-If you want to set the default charset, follow the steps:
+如果你想修改默认的字符集, 按照以下步骤:
 
-1. Start -> Run -> regedit
-2. Go to `[HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor\Autorun]`
-3. Change the value to `@chcp 65001>nul`
+1. 开始 -> 运行 -> regedit
+2. 找到 `[HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor\Autorun]`
+3. 将其值修改为 `@chcp 65001>nul`
 
-If `Autorun` is not present, you can add a `New String`.
+如果 `Autorun` 不存在, 你可以创建一个新的字符串类型的键值对.
 
-This approach will auto-execute `@chcp 65001>nul` when `cmd` starts.
+此方法将在`cmd` 启动时自动执行 `@chcp 65001>nul`。
 
 **Linux**
 
@@ -111,55 +111,73 @@ Global Flags:
 
 ## Download
 
-### Only one episode
+### 只下载一个视频
+
+默认下载最高画质。
 
 ```sh
-# Download from the watch page
-# The anime will be saved in ./anime_series_title/
+# 从观看页下载
+# 视频会保存在 ./番剧名称/
 $ hani dl https://hanime1.me/watch?v=xxxx
 ```
 
-### Full series based on the specified episode
+![](./docs/assets/single_file.gif)
+
+### 下载整个系列
 
 ```sh
-# Download the full series
-# E.g. If you give the link of the Anime_Foo_02
-# then the full series of Anime_Foo will be downloaded (Anime_Foo_01, Anime_Foo_02, ...)
+# 下载整个系列
+# E.g. 比如你给的 Anime_Foo_02 的链接
+# 会将 Anime_Foo 整个系列全部下载下来 (Anime_Foo_01, Anime_Foo_02, ...)
 $ hani dl -s https://hanime1.me/watch?v=xxxx
 ```
 
-### Specify the output directory
+![](./docs/assets/series.gif)
+
+![](./docs/assets/series_2.gif)
+
+#### 跳过已下载的文件
+
+如果下载时有些文件卡住了，可以停止程序，然后重新开始下载。
+
+已经完成的文件会被跳过。
+
+![](./docs/assets/dl_stuck.gif)
+
+![](./docs/assets/restart.gif)
+
+### 指定输出路径
 
 ```sh
 # The anime will be saved in output_dir/anime_series_title/
 $ hani dl -o <output_dir>
 ```
 
-### Specify the quality
+### 指定画质
 
 ```sh
-# You can specify the quality of video
-# if it is not exists, the default (highest quality) will be downloaded
+# 你可以指定画质
+# 如果指定的画质不存在，默认下载最高画质
 $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 ```
 
-### Get info only
+### 只获取可下载的文件信息
 
 ```sh
-# Get only the downloadable video info
-# title, quality, file extension
+# 获取下载文件信息:
+# 标题, 画质, 文件类型
 $ hani dl -i https://hanime1.me/watch?v=xxxx
 ```
 
-## Supported Site
+## 支持的网站
 
-> **NSFW** Warning, the following site may contain sensitive content.
+> **NSFW** 警告, 以下站点包含敏感内容.
 
 | Site       | Language | Episode    | Series   | Playlist   | Status        |
 | ---------- | -------- | ---------- | -------- | ---------- | ------------- |
-| hanime1.me | Chinese  | ✓          | ✓        | Developing | Available     |
+| hanime1.me | 中文     | ✓          | ✓        | Developing | Available     |
 | hanime.tv  | English  | Developing | Planning | Planning   | Not Available |
 
 ## Issue
 
-Feel free to create issues to report bugs or request new features.
+欢迎创建 issue 来报告 bug 或者 请求添加新特性。
