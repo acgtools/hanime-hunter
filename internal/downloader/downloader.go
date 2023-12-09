@@ -43,7 +43,9 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 
 	video := videos[0] // by default, download the highest quality
 	if d.Option.Quality != "" {
-		video = ani.Videos[strings.ToLower(d.Option.Quality)]
+		if v, ok := ani.Videos[strings.ToLower(d.Option.Quality)]; ok {
+			video = v
+		}
 	}
 
 	err := d.save(video, ani.Title, m)
