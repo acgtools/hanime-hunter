@@ -19,6 +19,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+const defaultAniTitle = "unknown"
+
 func init() {
 	resolvers.Resolvers.Register("hanime1.me", New())
 }
@@ -42,6 +44,9 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 		return nil, fmt.Errorf("get anime info from %q: %w", u, err)
 	}
 
+	if title == defaultAniTitle {
+		log.Warn("failed to get anime title")
+	}
 	log.Infof("Anime found: %s, Searching episodes, Please wait a moment...", title)
 
 	res := make([]*resolvers.HAnime, 0)
@@ -106,10 +111,16 @@ func getAniInfo(u string) (string, []string, error) {
 	}
 
 	series := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "id", Val: "video-playlist-wrapper"}})
+	if len(series) == 0 {
+		return "", nil, fmt.Errorf("get series info from %q error", u)
+	}
 	seriesTag := series[0]
 
+	title := defaultAniTitle
 	titleTag := util.FindTagByNameAttrs(seriesTag, "h4", false, nil)
-	title := titleTag[0].FirstChild.Data
+	if len(titleTag) > 0 {
+		title = titleTag[0].FirstChild.Data
+	}
 
 	return title, getSeriesLinks(seriesTag), nil
 }
@@ -163,9 +174,14 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 	aTags := util.FindTagByNameAttrs(tables[0], "a", false, nil)
 	for _, a := range aTags {
 		link := util.GetAttrVal(a, "href")
-		id := getID(link)
-		quality := strings.Split(id, "-")[1]
 		title := util.GetAttrVal(a, "download")
+
+		id := getID(link)
+		quality := ""
+		if tmp := strings.Split(id, "-"); len(tmp) > 1 { // the video id may not contain quality
+			quality = tmp[1]
+		}
+
 		size, ext, err := getVideoInfo(link)
 		if err != nil {
 			return nil, nil, err
