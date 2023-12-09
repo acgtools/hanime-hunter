@@ -9,11 +9,13 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "hani",
-	Short: "Hanime downloader",
-	Long:  ``,
+	Short: "HAnime downloader",
+	Long:  `HAnime downloader. Repo: https://github.com/acgtools/hanime-hunter`,
 }
 
 func Execute() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -21,7 +23,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().String("log-level", "info", "log level, options: ")
+	rootCmd.PersistentFlags().String("log-level", "info", "log level, options: debug, info, warn, error, fatal")
 
 	_ = viper.BindPFlag("log.level", rootCmd.PersistentFlags().Lookup("log-level"))
 

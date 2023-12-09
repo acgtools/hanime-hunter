@@ -10,7 +10,7 @@ var version = "unknown"
 
 var verCmd = &cobra.Command{
 	Use:   "version",
-	Short: "",
+	Short: "Print version info",
 	Run: func(cmd *cobra.Command, args []string) {
 		goVersion := runtime.Version()
 		platform := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
