@@ -20,7 +20,24 @@
 -->
 ![](https://political-capable-roll.glitch.me/get/@acg_tools_hanime_hunter?theme=rule34)
 
-[toc]
+* [hanime-hunter](#hanime-hunter)
+   * [安装](#安装)
+      * [使用 go](#使用-go)
+      * [从 releases 页面下载](#从-releases-页面下载)
+   * [快速开始](#快速开始)
+      * [前提条件](#前提条件)
+         * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
+      * [Command Help](#command-help)
+         * [Download](#download)
+   * [Download](#download-1)
+      * [只下载一个视频](#只下载一个视频)
+      * [下载整个系列](#下载整个系列)
+         * [跳过已下载的文件](#跳过已下载的文件)
+      * [指定输出路径](#指定输出路径)
+      * [指定画质](#指定画质)
+      * [只获取可下载的文件信息](#只获取可下载的文件信息)
+   * [支持的网站](#支持的网站)
+   * [Issue](#issue)
 
 ## 安装
 

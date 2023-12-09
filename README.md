@@ -22,7 +22,24 @@ If this repo is helpful to you, please consider giving it a star (o゜▽゜)o�
 -->
 ![](https://political-capable-roll.glitch.me/get/@acg_tools_hanime_hunter?theme=rule34)
 
-[toc]
+* [hanime-hunter](#hanime-hunter)
+   * [Installation](#installation)
+      * [Using go](#using-go)
+      * [Download from releases](#download-from-releases)
+   * [Quick Start](#quick-start)
+      * [Prerequisites](#prerequisites)
+         * [Ensure that your terminal charset is UTF-8](#ensure-that-your-terminal-charset-is-utf-8)
+      * [Command Help](#command-help)
+         * [Download](#download)
+   * [Download](#download-1)
+      * [Only one episode](#only-one-episode)
+      * [Full series based on the specified episode](#full-series-based-on-the-specified-episode)
+         * [Skip downloaded files](#skip-downloaded-files)
+      * [Specify the output directory](#specify-the-output-directory)
+      * [Specify the quality](#specify-the-quality)
+      * [Get info only](#get-info-only)
+   * [Supported Site](#supported-site)
+   * [Issue](#issue)
 
 ## Installation
 
