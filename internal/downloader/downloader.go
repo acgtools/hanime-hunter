@@ -66,14 +66,12 @@ func SPrintVideosInfo(vs []*resolvers.Video) string {
 func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Model) error {
 	fPath := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
 
-	if d.Option.OutputDir != "" {
-		outputDir := filepath.Join(d.Option.OutputDir, aniTitle)
-		err := os.MkdirAll(outputDir, os.ModePerm)
-		if err != nil {
-			return fmt.Errorf("create output dirs: %w", err)
-		}
-		fPath = filepath.Join(outputDir, fPath)
+	outputDir := filepath.Join(d.Option.OutputDir, aniTitle)
+	err := os.MkdirAll(outputDir, os.ModePerm)
+	if err != nil {
+		return err
 	}
+	fPath = filepath.Join(outputDir, fPath)
 
 	if f, err := os.Lstat(fPath); err == nil {
 		if f.Size() == v.Size {

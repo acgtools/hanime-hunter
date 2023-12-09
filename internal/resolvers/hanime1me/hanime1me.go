@@ -51,7 +51,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 			return nil, fmt.Errorf("get download info: %w", err)
 		}
 
-		log.Info("Episodes found", "episodes", eps[0])
+		log.Infof("Episodes found: %q", eps[0])
 
 		res = append(res, &resolvers.HAnime{
 			URL:    u,
