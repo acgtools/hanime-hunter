@@ -30,6 +30,7 @@
    * [安装](#安装)
       * [使用 go](#使用-go)
       * [从 releases 页面下载](#从-releases-页面下载)
+   * [支持的网站](#支持的网站)
    * [快速开始](#快速开始)
       * [前提条件](#前提条件)
          * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
@@ -39,10 +40,10 @@
       * [只下载一个视频](#只下载一个视频)
       * [下载整个系列](#下载整个系列)
          * [跳过已下载的文件](#跳过已下载的文件)
+      * [下载播放清单](#下载播放清单)
       * [指定输出路径](#指定输出路径)
       * [指定画质](#指定画质)
       * [只获取可下载的文件信息](#只获取可下载的文件信息)
-   * [支持的网站](#支持的网站)
    * [Issue](#issue)
 
 ## 安装
@@ -56,6 +57,15 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 ### 从 releases 页面下载
 
 [release page](https://github.com/acgtools/hanime-hunter/releases)
+
+## 支持的网站
+
+> **NSFW** 警告, 以下站点包含敏感内容.
+
+| Site       | Language | Episode    | Series   | Playlist | Status        |
+| ---------- | -------- | ---------- | -------- | -------- | ------------- |
+| hanime1.me | 中文     | ✓          | ✓        | ✓        | Available     |
+| hanime.tv  | English  | Developing | Planning | Planning | Not Available |
 
 ## 快速开始
 
@@ -169,6 +179,14 @@ $ hani dl -s https://hanime1.me/watch?v=xxxx
 
 ![](./docs/assets/restart.gif)
 
+### 下载播放清单
+
+```sh
+$ hani dl https://hanime1.me/playlist?list=xxxx
+```
+
+![](./docs/assets/playlist.gif)
+
 ### 指定输出路径
 
 ```sh
@@ -191,15 +209,6 @@ $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 # 标题, 画质, 文件类型
 $ hani dl -i https://hanime1.me/watch?v=xxxx
 ```
-
-## 支持的网站
-
-> **NSFW** 警告, 以下站点包含敏感内容.
-
-| Site       | Language | Episode    | Series   | Playlist   | Status        |
-| ---------- | -------- | ---------- | -------- | ---------- | ------------- |
-| hanime1.me | 中文     | ✓          | ✓        | Developing | Available     |
-| hanime.tv  | English  | Developing | Planning | Planning   | Not Available |
 
 ## Issue
 
