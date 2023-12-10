@@ -20,6 +20,12 @@
 -->
 ![](https://political-capable-roll.glitch.me/get/@acg_tools_hanime_hunter?theme=rule34)
 
+## 选择你的阵营
+
+点击 [这里](https://github.com/acgtools/hanime-hunter/issues/3) 然后选择一个表情：纯爱战士 ❤️, 牛头人：🚀
+
+<img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326405.jpg" height=180> <img src="https://github-issue-vote.vercel.app/vote?issue=https://github.com/dreamjz/waifu-getter/issues/2" height=190> <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326670.jpg" height=180>
+
 * [hanime-hunter](#hanime-hunter)
    * [安装](#安装)
       * [使用 go](#使用-go)
