@@ -131,6 +131,7 @@ func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
 			}
 
 			log.Infof("Episodes found: %#q", eps[0])
+			time.Sleep(1 * time.Second) // reduce request frequency to avoid rate limit
 
 			res = append(res, &resolvers.HAnime{
 				URL:    href,
@@ -158,7 +159,7 @@ func getSiteAndVID(u string) (string, string, error) {
 }
 
 func getAniInfo(u string) (string, []string, error) {
-	doc, err := getAniPage(u)
+	doc, err := getHTMLPage(u)
 	if err != nil {
 		return "", nil, fmt.Errorf("get ani page %q: %w", u, err)
 	}
@@ -178,21 +179,6 @@ func getAniInfo(u string) (string, []string, error) {
 	return title, getSeriesLinks(seriesTag), nil
 }
 
-func getAniPage(u string) (*html.Node, error) {
-	resp, err := request(http.MethodGet, u)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	doc, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("parse anime info page %q to HTML doc: %w", u, err)
-	}
-
-	return doc, nil
-}
-
 func getSeriesLinks(node *html.Node) []string {
 	list := util.FindTagByNameAttrs(node, "div", true, []html.Attribute{{Key: "id", Val: "playlist-scroll"}})
 
@@ -210,7 +196,8 @@ func getSeriesLinks(node *html.Node) []string {
 }
 
 func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
-	doc, err := getDLPage(vid)
+	u := "https://hanime1.me/download?v=" + vid
+	doc, err := getHTMLPage(u)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get download page: %w", err)
 	}
@@ -241,7 +228,7 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 		}
 
 		episodes = append(episodes, title)
-		log.Debugf("Episode found: %s - %s - %s", title, quality, ext)
+		log.Debugf("Video found: %s - %s - %s", title, quality, ext)
 
 		vidMap[quality] = &resolvers.Video{
 			ID:      id,
@@ -279,23 +266,6 @@ func getID(link string) string {
 	return r.FindString(link)
 }
 
-func getDLPage(vid string) (*html.Node, error) {
-	u := "https://hanime1.me/download?v=" + vid
-
-	resp, err := request(http.MethodGet, u)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	doc, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("parse html of %q: %w", u, err)
-	}
-
-	return doc, nil
-}
-
 func getHTMLPage(u string) (*html.Node, error) {
 	resp, err := request(http.MethodGet, u)
 	if err != nil {
@@ -311,7 +281,7 @@ func getHTMLPage(u string) (*html.Node, error) {
 	return doc, nil
 }
 
-func request(method string, u string) (*http.Response, error) { //nolint:unparam
+func request(method string, u string) (*http.Response, error) {
 	client := newClient()
 
 	req, err := http.NewRequest(method, u, nil) //nolint:noctx
