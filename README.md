@@ -32,6 +32,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
    * [Installation](#installation)
       * [Using go](#using-go)
       * [Download from releases](#download-from-releases)
+   * [Supported Site](#supported-site)
    * [Quick Start](#quick-start)
       * [Prerequisites](#prerequisites)
          * [Ensure that your terminal charset is UTF-8](#ensure-that-your-terminal-charset-is-utf-8)
@@ -41,10 +42,10 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
       * [Only one episode](#only-one-episode)
       * [Full series based on the specified episode](#full-series-based-on-the-specified-episode)
          * [Skip downloaded files](#skip-downloaded-files)
+      * [Download playlist](#download-playlist)
       * [Specify the output directory](#specify-the-output-directory)
       * [Specify the quality](#specify-the-quality)
       * [Get info only](#get-info-only)
-   * [Supported Site](#supported-site)
    * [Issue](#issue)
 
 ## Installation
@@ -58,6 +59,15 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 ### Download from releases
 
 [release page](https://github.com/acgtools/hanime-hunter/releases)
+
+## Supported Site
+
+> **NSFW** Warning, the following site may contain sensitive content.
+
+| Site       | Language | Episode    | Series   | Playlist | Status        |
+| ---------- | -------- | ---------- | -------- | -------- | ------------- |
+| hanime1.me | Chinese  | ✓          | ✓        | ✓        | Available     |
+| hanime.tv  | English  | Developing | Planning | Planning | Not Available |
 
 ## Quick Start
 
@@ -171,6 +181,14 @@ It will skip the files that have already been downloaded.
 
 ![](./docs/assets/restart.gif)
 
+### Download playlist
+
+```sh
+$ hani dl https://hanime1.me/playlist?list=xxxx
+```
+
+![](./docs/assets/playlist.gif)
+
 ### Specify the output directory
 
 ```sh
@@ -193,15 +211,6 @@ $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 # title, quality, file extension
 $ hani dl -i https://hanime1.me/watch?v=xxxx
 ```
-
-## Supported Site
-
-> **NSFW** Warning, the following site may contain sensitive content.
-
-| Site       | Language | Episode    | Series   | Playlist   | Status        |
-| ---------- | -------- | ---------- | -------- | ---------- | ------------- |
-| hanime1.me | Chinese  | ✓          | ✓        | Developing | Available     |
-| hanime.tv  | English  | Developing | Planning | Planning   | Not Available |
 
 ## Issue
 
