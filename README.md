@@ -26,7 +26,7 @@ If this repo is helpful to you, please consider giving it a star (o゜▽゜)o�
 
 Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a reaction:  Pure Love Knight ❤️, NTR Warrior：🚀
 
-<img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326405.jpg" height=180> <img src="https://github-issue-vote.vercel.app/vote?issue=https://github.com/dreamjz/waifu-getter/issues/2" height=190> <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326670.jpg" height=180>
+<img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326405.jpg" height=180> <img src="https://github-issue-vote.vercel.app/vote?issue=https://github.com/acgtools/hanime-hunter/issues/3" height=190> <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326670.jpg" height=180>
 
 * [hanime-hunter](#hanime-hunter)
    * [Installation](#installation)
