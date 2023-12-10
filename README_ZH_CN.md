@@ -45,6 +45,7 @@
       * [指定画质](#指定画质)
       * [只获取可下载的文件信息](#只获取可下载的文件信息)
    * [Issue](#issue)
+   * [Star History](#star-history)
 
 ## 安装
 
@@ -213,3 +214,7 @@ $ hani dl -i https://hanime1.me/watch?v=xxxx
 ## Issue
 
 欢迎创建 issue 来报告 bug 或者 请求添加新特性。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=acgtools/hanime-hunter&type=Date)](https://star-history.com/#acgtools/hanime-hunter&Date)

@@ -47,6 +47,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
       * [Specify the quality](#specify-the-quality)
       * [Get info only](#get-info-only)
    * [Issue](#issue)
+   * [Star History](#star-history)
 
 ## Installation
 
@@ -215,3 +216,7 @@ $ hani dl -i https://hanime1.me/watch?v=xxxx
 ## Issue
 
 Feel free to create issues to report bugs or request new features.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=acgtools/hanime-hunter&type=Date)](https://star-history.com/#acgtools/hanime-hunter&Date)
