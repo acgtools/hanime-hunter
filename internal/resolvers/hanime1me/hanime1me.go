@@ -34,6 +34,10 @@ var _ resolvers.Resolver = (*resolver)(nil)
 type resolver struct{}
 
 func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnime, error) {
+	if strings.Contains(u, "playlist") {
+		return resolvePlaylist(u)
+	}
+
 	site, vid, err := getSiteAndVID(u)
 	if err != nil {
 		return nil, fmt.Errorf("parse url %q: %w", u, err)
@@ -86,6 +90,55 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 		}
 
 		log.Infof("Episodes found %#q", titles)
+	}
+
+	return res, nil
+}
+
+func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
+	doc, err := getHTMLPage(u)
+	if err != nil {
+		return nil, err
+	}
+
+	playlist := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "id", Val: "home-rows-wrapper"}})
+	if len(playlist) == 0 {
+		return nil, fmt.Errorf("palylist in %q not found", u)
+	}
+
+	// hanime1me only contains one list div
+	aTags := util.FindTagByNameAttrs(playlist[0], "a", true, []html.Attribute{{Key: "class", Val: "playlist-show-links"}})
+
+	res := make([]*resolvers.HAnime, 0)
+	for _, a := range aTags {
+		href := util.GetAttrVal(a, "href")
+		if strings.Contains(href, "watch") {
+			site, vid, err := getSiteAndVID(href)
+			if err != nil {
+				return nil, err
+			}
+
+			title, _, err := getAniInfo(href)
+			if err != nil {
+				return nil, err
+			}
+
+			log.Infof("Anime found: %s, Searching episodes, Please wait a moment...", title)
+
+			videos, eps, err := getDLInfo(vid)
+			if err != nil {
+				return nil, err
+			}
+
+			log.Infof("Episodes found: %#q", eps[0])
+
+			res = append(res, &resolvers.HAnime{
+				URL:    href,
+				Site:   site,
+				Title:  title,
+				Videos: videos,
+			})
+		}
 	}
 
 	return res, nil
@@ -243,7 +296,22 @@ func getDLPage(vid string) (*html.Node, error) {
 	return doc, nil
 }
 
-func request(method string, u string) (*http.Response, error) {
+func getHTMLPage(u string) (*html.Node, error) {
+	resp, err := request(http.MethodGet, u)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("parse html of %q: %w", u, err)
+	}
+
+	return doc, nil
+}
+
+func request(method string, u string) (*http.Response, error) { //nolint:unparam
 	client := newClient()
 
 	req, err := http.NewRequest(method, u, nil) //nolint:noctx
