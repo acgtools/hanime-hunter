@@ -31,6 +31,7 @@
       * [使用 go](#使用-go)
       * [从 releases 页面下载](#从-releases-页面下载)
    * [支持的网站](#支持的网站)
+   * [社区](#社区)
    * [快速开始](#快速开始)
       * [前提条件](#前提条件)
          * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
@@ -67,6 +68,10 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 | ---------- | -------- | ---------- | -------- | -------- | ------------- |
 | hanime1.me | 中文     | ✓          | ✓        | ✓        | Available     |
 | hanime.tv  | English  | Developing | Planning | Planning | Not Available |
+
+## 社区
+
+[Discord](https://discord.gg/e78WnwYq)
 
 ## 快速开始
 

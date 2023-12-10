@@ -33,6 +33,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
       * [Using go](#using-go)
       * [Download from releases](#download-from-releases)
    * [Supported Site](#supported-site)
+   * [Conmunity](#community)
    * [Quick Start](#quick-start)
       * [Prerequisites](#prerequisites)
          * [Ensure that your terminal charset is UTF-8](#ensure-that-your-terminal-charset-is-utf-8)
@@ -69,6 +70,10 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 | ---------- | -------- | ---------- | -------- | -------- | ------------- |
 | hanime1.me | Chinese  | ✓          | ✓        | ✓        | Available     |
 | hanime.tv  | English  | Developing | Planning | Planning | Not Available |
+
+## Community
+
+[Discord](https://discord.gg/e78WnwYq)
 
 ## Quick Start
 
