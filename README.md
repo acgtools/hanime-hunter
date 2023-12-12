@@ -4,7 +4,7 @@ English | [简体中文](./README_ZH_CN.md)
 
 A CLI app to download HAnime.
 
-If this repo is helpful to you, please consider giving it a star (o゜▽゜)o☆ . Thank you OwO.
+If you like this repo, please consider giving it a star (o゜▽゜)o☆ . Thank you OwO.
 
 > Random Wink OvO
 
