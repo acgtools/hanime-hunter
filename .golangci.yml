@@ -28,6 +28,7 @@ linters:
     - gochecknoinits # disable no init function
     - gochecknoglobals # disbale no global variable
     - depguard # disbale depguard
+    - noctx # disable noctx
 
 issues:
   exclude-rules:

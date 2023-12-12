@@ -2,6 +2,8 @@ package util
 
 import (
 	"regexp"
+	"strings"
+	"unsafe"
 
 	"golang.org/x/net/html"
 )
@@ -44,4 +46,20 @@ func GetAttrVal(node *html.Node, name string) string {
 	}
 
 	return ""
+}
+
+func ParseM3U8URLs(htmlBytes []byte) []string {
+	htmlStr := unsafe.String(unsafe.SliceData(htmlBytes), len(htmlBytes))
+
+	lines := strings.Split(htmlStr, "\n")
+	var urls []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			if strings.HasPrefix(line, "http") {
+				urls = append(urls, line)
+			}
+		}
+	}
+	return urls
 }
