@@ -66,7 +66,6 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 
 	err := d.save(video, ani.Title, m)
 	if err != nil {
-		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return fmt.Errorf("download file %q: %w", video.Title, err)
 	}
 
@@ -142,6 +141,7 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 	if err != nil {
 		return fmt.Errorf("make dir %q: %w", tmpDir, err)
 	}
+	defer os.RemoveAll(tmpDir)
 
 	fileListPath := filepath.Join(tmpDir, "fileList.txt")
 	err = createTmpFileList(fileListPath, len(segURIs))
@@ -271,6 +271,10 @@ func saveTS(path, u string, key, iv []byte) error {
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("read data from %q: %w", u, err)
+	}
+
+	if len(data) == 0 { // if there is no data here, skip
+		return nil
 	}
 
 	tsData, err := util.AESDecrypt(data, key, iv)
