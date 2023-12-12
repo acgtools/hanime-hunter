@@ -186,10 +186,7 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 		return err //nolint:wrapcheck
 	}
 
-	if err := mergeFiles(d, fileListPath, fName, fPath); err != nil {
-		return err
-	}
-	return nil
+	return mergeFiles(d, fileListPath, fName, fPath)
 }
 
 func mergeFiles(d *Downloader, fileListPath, fName, fPath string) error {
