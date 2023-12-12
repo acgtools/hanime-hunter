@@ -13,6 +13,7 @@ type Video struct {
 	ID      string
 	Quality string
 	URL     string
+	IsM3U8  bool
 	Title   string
 	Size    int64
 	Ext     string

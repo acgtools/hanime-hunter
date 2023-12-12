@@ -4,17 +4,11 @@ import (
 	"io"
 	"os"
 	"sync"
+	"sync/atomic"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-type ProgressMsg struct {
-	FileName string
-	Ratio    float64
-}
-
-type ProgressErrMsg struct{ Err error }
 
 type Model struct {
 	err   error
@@ -24,13 +18,15 @@ type Model struct {
 	Pbs   map[string]*ProgressBar
 }
 
+var _ tea.Model = (*Model)(nil)
+
 type ProgressBar struct {
 	Pw       *ProgressWriter
+	Pc       *ProgressCounter
 	Progress progress.Model
 	FileName string
+	Status   string
 }
-
-var _ tea.Model = (*Model)(nil)
 
 type ProgressWriter struct {
 	Total      int64
@@ -55,4 +51,18 @@ func (pw *ProgressWriter) Write(p []byte) (int, error) {
 		pw.OnProgress(pw.FileName, float64(pw.Downloaded)/float64(pw.Total))
 	}
 	return len(p), nil
+}
+
+type ProgressCounter struct {
+	Total      int64
+	Downloaded atomic.Int64
+	FileName   string
+	Onprogress func(string, float64)
+}
+
+func (pc *ProgressCounter) Increase() {
+	d := pc.Downloaded.Add(1)
+	if pc.Total > 0 && pc.Onprogress != nil {
+		pc.Onprogress(pc.FileName, float64(d)/float64(pc.Total))
+	}
 }
