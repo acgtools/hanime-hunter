@@ -14,21 +14,20 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/acgtools/hanime-hunter/pkg/util"
-
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
-
-	"github.com/grafov/m3u8"
-
 	"github.com/acgtools/hanime-hunter/internal/request"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
 	"github.com/acgtools/hanime-hunter/internal/tui/color"
 	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
+	"github.com/acgtools/hanime-hunter/pkg/util"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
+	"github.com/grafov/m3u8"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
+
+const defaultGoRoutineNum = 100
 
 type Downloader struct {
 	p      *tea.Program
@@ -131,26 +130,9 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 }
 
 func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string, m *progressbar.Model) error {
-	m3u8Data, err := getM3U8Data(v.URL)
+	segURIs, mediaPL, err := getSegURIs(v.URL)
 	if err != nil {
 		return err
-	}
-
-	list, listType, err := m3u8.DecodeFrom(bytes.NewReader(m3u8Data), true)
-	if err != nil {
-		return fmt.Errorf("parse m3u8 data: %w", err)
-	}
-	if listType != m3u8.MEDIA {
-		return errors.New("no media data found")
-	}
-	mediaPL := list.(*m3u8.MediaPlaylist)
-
-	segURIs := make([]string, 0)
-	for _, s := range mediaPL.Segments {
-		if s == nil {
-			continue
-		}
-		segURIs = append(segURIs, s.URI)
 	}
 
 	tmpDir := filepath.Join(outputDir, "tmp-"+fName)
@@ -165,29 +147,20 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 		return err
 	}
 
-	key, err := getKey(mediaPL.Key.URI)
+	key, iv, err := getKeyIV(mediaPL)
 	if err != nil {
 		return err
 	}
 
-	iv := key
-	if mediaPL.Key.IV != "" {
-		iv = []byte(mediaPL.Key.IV)
-	}
-
 	pb := countProgressBar(d, int64(len(segURIs)), fName)
-	pb.Status = progressbar.DownloadingStatus
+	m.AddPb(pb)
 
-	m.Mux.Lock()
-	m.Pbs[fName] = pb
-	m.Mux.Unlock()
-
-	sem := semaphore.NewWeighted(100)
+	sem := semaphore.NewWeighted(defaultGoRoutineNum)
 	group, ctx := errgroup.WithContext(context.Background())
 	dlTS := func(idx, u string) func() error {
 		return func() error {
 			if err := sem.Acquire(ctx, 1); err != nil {
-				return err
+				return fmt.Errorf("download TS file: %w", err)
 			}
 			defer sem.Release(1)
 
@@ -197,9 +170,9 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 				return err
 			}
 
-			pb.Pc.Increase()
+			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
 
-			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond)
+			pb.Pc.Increase()
 
 			return nil
 		}
@@ -208,19 +181,26 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 	for i, u := range segURIs {
 		group.Go(dlTS(strconv.Itoa(i), u))
 	}
-
 	if err := group.Wait(); err != nil {
+		return err //nolint:wrapcheck
+	}
+
+	if err := mergeFiles(d, fileListPath, fName, fPath); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func mergeFiles(d *Downloader, fileListPath, fName, fPath string) error {
 	d.p.Send(progressbar.ProgressStatusMsg{
 		FileName: fName,
 		Status:   progressbar.MergingStatus,
 	})
 
-	err = util.MergeToMP4(fileListPath, fPath)
+	err := util.MergeToMP4(fileListPath, fPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("file merge: %w", err)
 	}
 
 	d.p.Send(progressbar.ProgressStatusMsg{
@@ -248,6 +228,32 @@ func createTmpFileList(path string, num int) error {
 	return nil
 }
 
+func getSegURIs(u string) ([]string, *m3u8.MediaPlaylist, error) {
+	m3u8Data, err := getM3U8Data(u)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	list, listType, err := m3u8.DecodeFrom(bytes.NewReader(m3u8Data), true)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse m3u8 data: %w", err)
+	}
+	if listType != m3u8.MEDIA {
+		return nil, nil, errors.New("no media data found")
+	}
+	mediaPL := list.(*m3u8.MediaPlaylist) //nolint:forcetypeassert
+
+	segURIs := make([]string, 0)
+	for _, s := range mediaPL.Segments {
+		if s == nil {
+			continue
+		}
+		segURIs = append(segURIs, s.URI)
+	}
+
+	return segURIs, mediaPL, nil
+}
+
 func saveTS(path, u string, key, iv []byte) error {
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -261,7 +267,7 @@ func saveTS(path, u string, key, iv []byte) error {
 	}
 	resp, err := util.Get(client, u, headers)
 	if err != nil {
-		return err
+		return fmt.Errorf("download TS file: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -272,7 +278,7 @@ func saveTS(path, u string, key, iv []byte) error {
 
 	tsData, err := util.AESDecrypt(data, key, iv)
 	if err != nil {
-		return fmt.Errorf("decrypt data from %q: %w", err)
+		return fmt.Errorf("decrypt data from %q: %w", u, err)
 	}
 
 	file, err := os.Create(path)
@@ -289,20 +295,24 @@ func saveTS(path, u string, key, iv []byte) error {
 	return nil
 }
 
-func getKey(u string) ([]byte, error) {
-	resp, err := request.Request(http.MethodGet, u)
-
+func getKeyIV(mediaPL *m3u8.MediaPlaylist) ([]byte, []byte, error) {
+	resp, err := request.Request(http.MethodGet, mediaPL.Key.URI)
 	if err != nil {
-		return nil, fmt.Errorf("get m3u8 Key: %w", err)
+		return nil, nil, fmt.Errorf("get m3u8 Key: %w", err)
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	key, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("read m3u8 Key: %w", err)
+		return nil, nil, fmt.Errorf("read m3u8 Key: %w", err)
 	}
 
-	return data, nil
+	iv := key
+	if mediaPL.Key.IV != "" {
+		iv = []byte(mediaPL.Key.IV)
+	}
+
+	return key, iv, nil
 }
 
 func getM3U8Data(u string) ([]byte, error) {
@@ -349,6 +359,7 @@ func countProgressBar(d *Downloader, total int64, fileName string) *progressbar.
 		Pc:       pc,
 		Progress: progress.New(progress.WithGradient(colors[0], colors[1])),
 		FileName: fileName,
+		Status:   progressbar.DownloadingStatus,
 	}
 
 	return pb

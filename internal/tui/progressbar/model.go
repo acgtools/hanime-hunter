@@ -20,6 +20,12 @@ type Model struct {
 
 var _ tea.Model = (*Model)(nil)
 
+func (m *Model) AddPb(pb *ProgressBar) {
+	m.Mux.Lock()
+	defer m.Mux.Unlock()
+	m.Pbs[pb.FileName] = pb
+}
+
 type ProgressBar struct {
 	Pw       *ProgressWriter
 	Pc       *ProgressCounter
