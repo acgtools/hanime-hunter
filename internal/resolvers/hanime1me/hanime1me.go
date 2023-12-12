@@ -131,7 +131,8 @@ func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
 			}
 
 			log.Infof("Episodes found: %#q", eps[0])
-			time.Sleep(1 * time.Second) // reduce request frequency to avoid rate limit
+			// reduce request frequency to avoid rate limit
+			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
 
 			res = append(res, &resolvers.HAnime{
 				URL:    href,
