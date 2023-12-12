@@ -28,7 +28,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-const defaultGoRoutineNum = 100
+const defaultGoRoutineNum = 20
 
 type Downloader struct {
 	p      *tea.Program
