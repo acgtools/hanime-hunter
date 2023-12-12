@@ -1,9 +1,10 @@
 package hanimetv
 
 type Video struct {
-	HentaiVideo     HentaiVideo     `json:"hentai_video"`
-	HentaiFranchise HentaiFranchise `json:"hentai_franchise"`
-	VideosManifest  VideosManifest  `json:"videos_manifest"`
+	HentaiVideo                 HentaiVideo                   `json:"hentai_video"`
+	HentaiFranchise             HentaiFranchise               `json:"hentai_franchise"`
+	VideosManifest              VideosManifest                `json:"videos_manifest"`
+	HentaiFranchiseHentaiVideos []*HentaiFranchiseHentaiVideo `json:"hentai_franchise_hentai_videos"`
 }
 
 type HentaiVideo struct {
@@ -20,6 +21,10 @@ type HentaiFranchise struct {
 
 type VideosManifest struct {
 	Servers []Server `json:"servers"`
+}
+
+type HentaiFranchiseHentaiVideo struct {
+	Slug string `json:"slug"`
 }
 
 type Server struct {

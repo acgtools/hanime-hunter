@@ -69,28 +69,29 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 			Title:  title,
 			Videos: videos,
 		})
-	} else {
-		titles := make([]string, 0)
 
-		for _, s := range series {
-			_, vID, _ := getSiteAndVID(s) // no need to check err
-			videos, eps, err := getDLInfo(vID)
-			if err != nil {
-				return nil, fmt.Errorf("get download info of %q: %w", vID, err)
-			}
+		return res, nil
+	}
 
-			titles = append(titles, eps[0])
-
-			res = append(res, &resolvers.HAnime{
-				URL:    s,
-				Site:   site,
-				Title:  title,
-				Videos: videos,
-			})
+	titles := make([]string, 0)
+	for _, s := range series {
+		_, vID, _ := getSiteAndVID(s) // no need to check err
+		videos, eps, err := getDLInfo(vID)
+		if err != nil {
+			return nil, fmt.Errorf("get download info of %q: %w", vID, err)
 		}
 
-		log.Infof("Episodes found %#q", titles)
+		titles = append(titles, eps[0])
+
+		res = append(res, &resolvers.HAnime{
+			URL:    s,
+			Site:   site,
+			Title:  title,
+			Videos: videos,
+		})
 	}
+
+	log.Infof("Episodes found %#q", titles)
 
 	return res, nil
 }
