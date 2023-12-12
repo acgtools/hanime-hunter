@@ -28,6 +28,8 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
 
 <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326405.jpg" height=180> <img src="https://github-issue-vote.vercel.app/vote?issue=https://github.com/acgtools/hanime-hunter/issues/3" height=190> <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326670.jpg" height=180>
 
+<!--ts-->
+
 * [hanime-hunter](#hanime-hunter)
    * [Installation](#installation)
       * [Using go](#using-go)
@@ -49,6 +51,8 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
       * [Get info only](#get-info-only)
    * [Issue](#issue)
    * [Star History](#star-history)
+
+<!--te-->
 
 ## Installation
 
@@ -108,6 +112,10 @@ $ echo $LANG
 en_US.UTF-8
 ```
 
+### FFmpeg
+
+- [FFmpeg](https://www.ffmpeg.org/)
+
 ### Command Help
 
 ```sh
@@ -150,7 +158,7 @@ Global Flags:
       --log-level string   log level, options: debug, info, warn, error, fatal (default "info")
 ```
 
-## Download
+## Hanime1me
 
 ### Only one episode
 
@@ -162,7 +170,7 @@ The default quality will be the highest quality.
 $ hani dl https://hanime1.me/watch?v=xxxx
 ```
 
-![](./docs/assets/single_file.gif)
+![](./docs/assets/hanime1me/single_file.gif)
 
 ### Full series based on the specified episode
 
@@ -173,9 +181,7 @@ $ hani dl https://hanime1.me/watch?v=xxxx
 $ hani dl -s https://hanime1.me/watch?v=xxxx
 ```
 
-![](./docs/assets/series.gif)
-
-![](./docs/assets/series_2.gif)
+![](./docs/assets/hanime1me/series.gif)
 
 #### Skip downloaded files
 
@@ -183,9 +189,9 @@ If some files get stuck during downloading, stop the program and then restart th
 
 It will skip the files that have already been downloaded.
 
-![](./docs/assets/dl_stuck.gif)
+![](./docs/assets/hanime1me/dl_stuck.gif)
 
-![](./docs/assets/restart.gif)
+![](./docs/assets/hanime1me/restart.gif)
 
 ### Download playlist
 
@@ -193,7 +199,66 @@ It will skip the files that have already been downloaded.
 $ hani dl https://hanime1.me/playlist?list=xxxx
 ```
 
-![](./docs/assets/playlist.gif)
+![](./docs/assets/hanime1me/playlist.gif)
+
+### Specify the output directory
+
+```sh
+# The anime will be saved in output_dir/anime_series_title/
+$ hani dl -o <output_dir>
+```
+
+### Specify the quality
+
+```sh
+# You can specify the quality of video
+# if it is not exist, the default (highest quality) will be downloaded
+$ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
+```
+
+### Get info only
+
+```sh
+# Get only the downloadable video info:
+# title, quality, file extension
+$ hani dl -i https://hanime1.me/watch?v=xxxx
+```
+
+## Hanimetv
+### Only one episode
+
+The default quality will be the highest quality.
+
+```sh
+# Download from the watch page
+# The anime will be saved in ./anime_series_title/
+$ hani dl https://hanime.tv/videos/hentai/xxx
+```
+
+![](./docs/assets/hanimetv/single_file.gif)
+
+### Full series based on the specified episode
+
+```sh
+# Download the full series
+# E.g. If you provide the link of the Anime_Foo_02
+# then the full series of Anime_Foo will be downloaded (Anime_Foo_01, Anime_Foo_02, ...)
+$ hani dl -s https://hanime.tv/videos/hentai/xxx
+```
+
+![](./docs/assets/hanimetv/series.gif)
+
+#### Skip downloaded files
+
+Not supported
+
+### Download playlist
+
+```sh
+$ hani dl https://hanime.tv/playlists/xxxx
+```
+
+![](./docs/assets/hanimetv/playlist.gif)
 
 ### Specify the output directory
 
@@ -207,7 +272,7 @@ $ hani dl -o <output_dir>
 ```sh
 # You can specify the quality of video
 # if it is not exists, the default (highest quality) will be downloaded
-$ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
+$ hani dl -q "720p" https://hanime.tv/videos/hentai/xxx
 ```
 
 ### Get info only
@@ -215,8 +280,9 @@ $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 ```sh
 # Get only the downloadable video info:
 # title, quality, file extension
-$ hani dl -i https://hanime1.me/watch?v=xxxx
+$ hani dl -i https://hanime.tv/videos/hentai/xxx
 ```
+
 
 ## Issue
 
