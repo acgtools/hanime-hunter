@@ -27,65 +27,56 @@ type resolver struct{}
 
 const videoAPIURL = "https://hanime.tv/api/v8/video?id="
 
-func (re *resolver) Resolve(u string, _ *resolvers.Option) ([]*resolvers.HAnime, error) {
+func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnime, error) {
 	urlRes, err := url.Parse(u)
 	if err != nil {
 		return nil, fmt.Errorf("parse %q: %w", u, err)
 	}
 	site := urlRes.Host
 
-	vid, err := getVideoID(urlRes.Path)
+	slug, err := getVideoID(urlRes.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	aniTitle, video, err := getVideoInfo(vid)
+	v, err := getVideoInfo(slug)
 	if err != nil {
 		return nil, err
 	}
 
 	res := make([]*resolvers.HAnime, 0)
 
-	res = append(res, &resolvers.HAnime{
-		URL:    u,
-		Site:   site,
-		Title:  aniTitle,
-		Videos: video,
-	})
+	if !opt.Series {
+		vidMap := getVidMap(v)
 
+		res = append(res, &resolvers.HAnime{
+			URL:    u,
+			Site:   site,
+			Title:  v.HentaiVideo.Name,
+			Videos: vidMap,
+		})
+
+		return res, nil
+	}
+
+	for _, fv := range v.HentaiFranchiseHentaiVideos {
+		video, err := getVideoInfo(fv.Slug)
+		if err != nil {
+			return nil, err
+		}
+
+		vidMap := getVidMap(video)
+
+		res = append(res, &resolvers.HAnime{
+			Site:   site,
+			Title:  video.HentaiVideo.Name,
+			Videos: vidMap,
+		})
+	}
 	return res, nil
 }
 
-func getVideoID(path string) (string, error) {
-	if !strings.HasPrefix(path, "/videos/hentai/") {
-		return "", fmt.Errorf("video ID not found in %q", path)
-	}
-
-	params := strings.Split(path, "/")
-	if len(params) != 4 { //nolint:gomnd
-		return "", fmt.Errorf("video ID not found in %q", path)
-	}
-
-	return params[3], nil
-}
-
-func getVideoInfo(slug string) (string, map[string]*resolvers.Video, error) {
-	resp, err := request(http.MethodGet, fmt.Sprintf("%s%s", videoAPIURL, slug))
-	if err != nil {
-		return "", nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", nil, fmt.Errorf("read response from anime %q: %w", slug, err)
-	}
-
-	v := &Video{}
-	if err := json.Unmarshal(data, v); err != nil {
-		return "", nil, fmt.Errorf("parse response json from anime %q : %w", slug, err)
-	}
-
+func getVidMap(v *Video) map[string]*resolvers.Video {
 	vidMap := make(map[string]*resolvers.Video)
 
 	for _, s := range v.VideosManifest.Servers[0].Streams {
@@ -105,7 +96,40 @@ func getVideoInfo(slug string) (string, map[string]*resolvers.Video, error) {
 		}
 	}
 
-	return v.HentaiFranchise.Name, vidMap, nil
+	return vidMap
+}
+
+func getVideoID(path string) (string, error) {
+	if !strings.HasPrefix(path, "/videos/hentai/") {
+		return "", fmt.Errorf("video ID not found in %q", path)
+	}
+
+	params := strings.Split(path, "/")
+	if len(params) != 4 { //nolint:gomnd
+		return "", fmt.Errorf("video ID not found in %q", path)
+	}
+
+	return params[3], nil
+}
+
+func getVideoInfo(slug string) (*Video, error) {
+	resp, err := request(http.MethodGet, fmt.Sprintf("%s%s", videoAPIURL, slug))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response from anime %q: %w", slug, err)
+	}
+
+	v := &Video{}
+	if err := json.Unmarshal(data, v); err != nil {
+		return nil, fmt.Errorf("parse response json from anime %q : %w", slug, err)
+	}
+
+	return v, nil
 }
 
 func request(method string, u string) (*http.Response, error) {
