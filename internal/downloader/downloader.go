@@ -175,7 +175,6 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
 
 			pb.Pc.Increase()
-
 			return nil
 		}
 	}
@@ -190,7 +189,6 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 	if err := mergeFiles(d, fileListPath, fName, fPath); err != nil {
 		return err
 	}
-
 	return nil
 }
 

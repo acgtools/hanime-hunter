@@ -99,7 +99,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
 	doc, err := util.GetHTMLPage(newClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	playlist := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "id", Val: "home-rows-wrapper"}})
