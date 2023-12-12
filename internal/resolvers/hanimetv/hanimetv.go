@@ -199,7 +199,7 @@ func getVideoID(path string) (string, error) {
 }
 
 func getVideoInfo(slug string) (*Video, error) {
-	resp, err := request(http.MethodGet, fmt.Sprintf("%s%s", videoAPIURL, slug))
+	resp, err := util.Get(NewClient(), fmt.Sprintf("%s%s", videoAPIURL, slug), map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
 		return nil, err
 	}
@@ -216,26 +216,6 @@ func getVideoInfo(slug string) (*Video, error) {
 	}
 
 	return v, nil
-}
-
-func request(method string, u string) (*http.Response, error) {
-	client := NewClient()
-
-	req, err := http.NewRequest(method, u, nil) //nolint:noctx
-	if err != nil {
-		return nil, fmt.Errorf("create http request for %q: %w", u, err)
-	}
-
-	const ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36"
-
-	req.Header.Set("User-Agent", ua)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("send http request to %q: %w", u, err)
-	}
-
-	return resp, nil
 }
 
 func NewClient() *http.Client {

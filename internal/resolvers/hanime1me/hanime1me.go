@@ -97,7 +97,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 }
 
 func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
-	doc, err := getHTMLPage(u)
+	doc, err := util.GetHTMLPage(newClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func getSiteAndVID(u string) (string, string, error) {
 }
 
 func getAniInfo(u string) (string, []string, error) {
-	doc, err := getHTMLPage(u)
+	doc, err := util.GetHTMLPage(newClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
 		return "", nil, fmt.Errorf("get ani page %q: %w", u, err)
 	}
@@ -199,7 +199,7 @@ func getSeriesLinks(node *html.Node) []string {
 
 func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 	u := "https://hanime1.me/download?v=" + vid
-	doc, err := getHTMLPage(u)
+	doc, err := util.GetHTMLPage(newClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
 		return nil, nil, fmt.Errorf("get download page: %w", err)
 	}
@@ -246,12 +246,7 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 }
 
 func getVideoInfo(u string) (int64, string, error) {
-	client := newClient()
-	headers := map[string]string{
-		"User-Agent": resolvers.UA,
-	}
-
-	resp, err := util.Get(client, u, headers)
+	resp, err := util.Get(newClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
 		return 0, "", fmt.Errorf("get dl info from %q: %w", u, err)
 	}
@@ -269,26 +264,6 @@ func getVideoInfo(u string) (int64, string, error) {
 func getID(link string) string {
 	r := regexp.MustCompile(`[^/]+-\d+p`)
 	return r.FindString(link)
-}
-
-func getHTMLPage(u string) (*html.Node, error) {
-	client := newClient()
-	headers := map[string]string{
-		"User-Agent": resolvers.UA,
-	}
-
-	resp, err := util.Get(client, u, headers)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
-	defer resp.Body.Close()
-
-	doc, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("parse html of %q: %w", u, err)
-	}
-
-	return doc, nil
 }
 
 func newClient() *http.Client {
