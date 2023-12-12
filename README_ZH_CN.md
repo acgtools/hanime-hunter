@@ -106,6 +106,10 @@ $ echo $LANG
 en_US.UTF-8
 ```
 
+### FFmpeg
+
+- [FFmpeg](https://www.ffmpeg.org/)
+
 ### Command Help
 
 ```sh
@@ -148,7 +152,7 @@ Global Flags:
       --log-level string   log level, options: debug, info, warn, error, fatal (default "info")
 ```
 
-## Download
+## Hanime1me
 
 ### 只下载一个视频
 
@@ -160,7 +164,7 @@ Global Flags:
 $ hani dl https://hanime1.me/watch?v=xxxx
 ```
 
-![](./docs/assets/single_file.gif)
+![](./docs/assets/hanime1me/single_file.gif)
 
 ### 下载整个系列
 
@@ -171,9 +175,7 @@ $ hani dl https://hanime1.me/watch?v=xxxx
 $ hani dl -s https://hanime1.me/watch?v=xxxx
 ```
 
-![](./docs/assets/series.gif)
-
-![](./docs/assets/series_2.gif)
+![](./docs/assets/hanime1me/series.gif)
 
 #### 跳过已下载的文件
 
@@ -181,9 +183,9 @@ $ hani dl -s https://hanime1.me/watch?v=xxxx
 
 已经完成的文件会被跳过。
 
-![](./docs/assets/dl_stuck.gif)
+![](./docs/assets/hanime1me/dl_stuck.gif)
 
-![](./docs/assets/restart.gif)
+![](./docs/assets/hanime1me/restart.gif)
 
 ### 下载播放清单
 
@@ -191,7 +193,7 @@ $ hani dl -s https://hanime1.me/watch?v=xxxx
 $ hani dl https://hanime1.me/playlist?list=xxxx
 ```
 
-![](./docs/assets/playlist.gif)
+![](./docs/assets/hanime1me/playlist.gif)
 
 ### 指定输出路径
 
@@ -215,6 +217,66 @@ $ hani dl -q "720p" https://hanime1.me/watch?v=xxxx
 # 标题, 画质, 文件类型
 $ hani dl -i https://hanime1.me/watch?v=xxxx
 ```
+
+## Hanimetv
+### Only one episode
+
+The default quality will be the highest quality.
+
+```sh
+# Download from the watch page
+# The anime will be saved in ./anime_series_title/
+$ hani dl https://hanime.tv/videos/hentai/xxx
+```
+
+![](./docs/assets/hanimetv/single_file.gif)
+
+### Full series based on the specified episode
+
+```sh
+# Download the full series
+# E.g. If you provide the link of the Anime_Foo_02
+# then the full series of Anime_Foo will be downloaded (Anime_Foo_01, Anime_Foo_02, ...)
+$ hani dl -s https://hanime.tv/videos/hentai/xxx
+```
+
+![](./docs/assets/hanimetv/series.gif)
+
+#### Skip downloaded files
+
+Not supported
+
+### Download playlist
+
+```sh
+$ hani dl https://hanime.tv/playlists/xxxx
+```
+
+![](./docs/assets/hanimetv/playlist.gif)
+
+### Specify the output directory
+
+```sh
+# The anime will be saved in output_dir/anime_series_title/
+$ hani dl -o <output_dir>
+```
+
+### Specify the quality
+
+```sh
+# You can specify the quality of video
+# if it is not exists, the default (highest quality) will be downloaded
+$ hani dl -q "720p" https://hanime.tv/videos/hentai/xxx
+```
+
+### Get info only
+
+```sh
+# Get only the downloadable video info:
+# title, quality, file extension
+$ hani dl -i https://hanime.tv/videos/hentai/xxx
+```
+
 
 ## Issue
 
