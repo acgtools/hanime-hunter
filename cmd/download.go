@@ -69,7 +69,7 @@ func download(aniURL string, cfg *Config) error {
 			}
 			defer sem.Release(1)
 
-			err := d.Download(ani, m)
+			err := d.Download(ani, m) //nolint:contextcheck
 			if err != nil {
 				return fmt.Errorf("download %q error: %w", ani.Title, err)
 			}

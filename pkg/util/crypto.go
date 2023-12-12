@@ -8,13 +8,17 @@ import (
 func AESDecrypt(encrypted []byte, key, iv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
+
 	size := block.BlockSize()
 	mode := cipher.NewCBCDecrypter(block, iv[:size])
+
 	decrypted := make([]byte, len(encrypted))
 	mode.CryptBlocks(decrypted, encrypted)
+
 	decrypted = pkcs5UnPadding(decrypted)
+
 	return decrypted, nil
 }
 

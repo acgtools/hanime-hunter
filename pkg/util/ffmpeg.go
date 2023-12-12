@@ -15,7 +15,7 @@ func MergeToMP4(fileListPath, outputPath string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("%w\n%s", err, errOutput)
+		return fmt.Errorf("%w\n%s", err, errOutput.String())
 	}
 
 	return nil

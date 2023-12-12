@@ -45,7 +45,7 @@ func (m *Model) View() string {
 	}
 
 	for _, pb := range m.pbs {
-		stats := ""
+		var stats string
 		if pb.Pc != nil {
 			stats = fmt.Sprintf("%d/%d", pb.Pc.Downloaded.Load(), pb.Pc.Total)
 		} else {
