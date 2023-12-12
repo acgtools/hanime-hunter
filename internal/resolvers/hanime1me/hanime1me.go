@@ -243,10 +243,13 @@ func getDLInfo(vid string) (map[string]*resolvers.Video, []string, error) {
 	return vidMap, episodes, nil
 }
 
-const ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36"
-
 func getVideoInfo(u string) (int64, string, error) {
-	resp, err := request(http.MethodGet, u)
+	client := newClient()
+	headers := map[string]string{
+		"User-Agent": resolvers.UA,
+	}
+
+	resp, err := util.Get(client, u, headers)
 	if err != nil {
 		return 0, "", fmt.Errorf("get dl info from %q: %w", u, err)
 	}
@@ -267,9 +270,14 @@ func getID(link string) string {
 }
 
 func getHTMLPage(u string) (*html.Node, error) {
-	resp, err := request(http.MethodGet, u)
+	client := newClient()
+	headers := map[string]string{
+		"User-Agent": resolvers.UA,
+	}
+
+	resp, err := util.Get(client, u, headers)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	defer resp.Body.Close()
 
@@ -279,24 +287,6 @@ func getHTMLPage(u string) (*html.Node, error) {
 	}
 
 	return doc, nil
-}
-
-func request(method string, u string) (*http.Response, error) {
-	client := newClient()
-
-	req, err := http.NewRequest(method, u, nil) //nolint:noctx
-	if err != nil {
-		return nil, fmt.Errorf("create http request for %q: %w", u, err)
-	}
-
-	req.Header.Set("User-Agent", ua)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("send http request to %q: %w", u, err)
-	}
-
-	return resp, nil
 }
 
 func newClient() *http.Client {

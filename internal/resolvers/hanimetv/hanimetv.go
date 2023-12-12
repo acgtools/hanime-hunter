@@ -109,7 +109,7 @@ func getVideoInfo(slug string) (string, map[string]*resolvers.Video, error) {
 }
 
 func request(method string, u string) (*http.Response, error) {
-	client := newClient()
+	client := NewClient()
 
 	req, err := http.NewRequest(method, u, nil) //nolint:noctx
 	if err != nil {
@@ -128,7 +128,7 @@ func request(method string, u string) (*http.Response, error) {
 	return resp, nil
 }
 
-func newClient() *http.Client {
+func NewClient() *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
 			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
