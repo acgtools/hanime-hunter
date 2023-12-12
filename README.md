@@ -40,7 +40,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
    * [Quick Start](#quick-start)
       * [Prerequisites](#prerequisites)
          * [Ensure that your terminal charset is UTF-8](#ensure-that-your-terminal-charset-is-utf-8)
-      * [FFmpeg](#ffmpeg)
+         * [FFmpeg](#ffmpeg)
       * [Command Help](#command-help)
          * [Download](#download)
    * [Hanime1me](#hanime1me)
@@ -122,7 +122,7 @@ $ echo $LANG
 en_US.UTF-8
 ```
 
-### FFmpeg
+#### FFmpeg
 
 - [FFmpeg](https://www.ffmpeg.org/)
 

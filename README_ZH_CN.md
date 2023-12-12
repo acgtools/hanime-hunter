@@ -36,7 +36,7 @@
    * [快速开始](#快速开始)
       * [前提条件](#前提条件)
          * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
-      * [FFmpeg](#ffmpeg)
+         * [FFmpeg](#ffmpeg)
       * [Command Help](#command-help)
          * [Download](#download)
    * [Hanime1me](#hanime1me)
@@ -116,7 +116,7 @@ $ echo $LANG
 en_US.UTF-8
 ```
 
-### FFmpeg
+#### FFmpeg
 
 - [FFmpeg](https://www.ffmpeg.org/)
 
