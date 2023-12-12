@@ -16,6 +16,7 @@ import (
 
 	"github.com/acgtools/hanime-hunter/internal/request"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
+	"github.com/acgtools/hanime-hunter/internal/resolvers/hanimetv"
 	"github.com/acgtools/hanime-hunter/internal/tui/color"
 	"github.com/acgtools/hanime-hunter/internal/tui/progressbar"
 	"github.com/acgtools/hanime-hunter/pkg/util"
@@ -116,10 +117,7 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 		fileName := filepath.Base(file.Name())
 
 		pb := progressBar(d, resp, file, fileName)
-
-		m.Mux.Lock()
-		m.Pbs[fileName] = pb
-		m.Mux.Unlock()
+		m.AddPb(pb)
 
 		pb.Pw.Start(d.p)
 
@@ -255,16 +253,11 @@ func getSegURIs(u string) ([]string, *m3u8.MediaPlaylist, error) {
 }
 
 func saveTS(path, u string, key, iv []byte) error {
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
-			Proxy:               http.ProxyFromEnvironment,
-		},
-	}
-
+	client := hanimetv.NewClient()
 	headers := map[string]string{
 		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36",
 	}
+
 	resp, err := util.Get(client, u, headers)
 	if err != nil {
 		return fmt.Errorf("download TS file: %w", err)
@@ -316,16 +309,11 @@ func getKeyIV(mediaPL *m3u8.MediaPlaylist) ([]byte, []byte, error) {
 }
 
 func getM3U8Data(u string) ([]byte, error) {
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
-			Proxy:               http.ProxyFromEnvironment,
-		},
+	client := hanimetv.NewClient()
+	headers := map[string]string{
+		"User-Agent": resolvers.UA,
 	}
 
-	headers := map[string]string{
-		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36",
-	}
 	resp, err := util.Get(client, u, headers)
 	if err != nil {
 		return nil, fmt.Errorf("get m3u8 data: %w", err)
