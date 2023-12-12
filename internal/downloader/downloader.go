@@ -120,6 +120,10 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 		m.AddPb(pb)
 
 		pb.Pw.Start(d.p)
+		d.p.Send(progressbar.ProgressStatusMsg{
+			FileName: fileName,
+			Status:   progressbar.CompleteStatus,
+		})
 
 		return nil
 	}
@@ -373,6 +377,7 @@ func progressBar(d *Downloader, resp *http.Response, file *os.File, fileName str
 		Pw:       pw,
 		Progress: progress.New(progress.WithGradient(colors[0], colors[1])),
 		FileName: fileName,
+		Status:   progressbar.DownloadingStatus,
 	}
 
 	return pb
