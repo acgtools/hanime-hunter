@@ -98,6 +98,7 @@ func getVideoInfo(slug string) (string, map[string]*resolvers.Video, error) {
 			ID:      strconv.FormatInt(s.ID, 10),
 			Quality: quality,
 			URL:     s.URL,
+			IsM3U8:  true,
 			Title:   v.HentaiVideo.Name,
 			Size:    s.Size,
 			Ext:     "mp4",

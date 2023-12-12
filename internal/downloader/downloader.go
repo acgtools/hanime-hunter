@@ -1,11 +1,25 @@
 package downloader
 
 import (
+	"bytes"
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync/atomic"
+	"time"
+
+	"github.com/acgtools/hanime-hunter/pkg/util"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
+
+	"github.com/grafov/m3u8"
 
 	"github.com/acgtools/hanime-hunter/internal/request"
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
@@ -39,7 +53,7 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 	videos := resolvers.SortAniVideos(ani.Videos, d.Option.LowQuality)
 
 	if d.Option.Info {
-		log.Infof("Videos available:\n%s", SPrintVideosInfo(videos))
+		log.Infof("Videos available:\n%s", sPrintVideosInfo(videos))
 		return nil
 	}
 
@@ -59,7 +73,7 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 	return nil
 }
 
-func SPrintVideosInfo(vs []*resolvers.Video) string {
+func sPrintVideosInfo(vs []*resolvers.Video) string {
 	var sb strings.Builder
 	for _, v := range vs {
 		sb.WriteString(fmt.Sprintf(" Title: %s, Quality: %s, Ext: %s\n", v.Title, v.Quality, v.Ext))
@@ -69,16 +83,15 @@ func SPrintVideosInfo(vs []*resolvers.Video) string {
 }
 
 func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Model) error {
-	fPath := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
-
 	outputDir := filepath.Join(d.Option.OutputDir, aniTitle)
 	err := os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
 		d.p.Send(progressbar.ProgressErrMsg{Err: err})
 		return fmt.Errorf("create download dir %q: %w", outputDir, err)
 	}
-	fPath = filepath.Join(outputDir, fPath)
 
+	fName := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
+	fPath := filepath.Join(outputDir, fName)
 	if f, err := os.Lstat(fPath); err == nil {
 		if f.Size() == v.Size {
 			log.Infof("File %q exists, Skip ...", fPath)
@@ -86,31 +99,259 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 		}
 	}
 
-	file, err := os.Create(fPath)
+	if !v.IsM3U8 {
+		file, err := os.Create(fPath)
+		if err != nil {
+			d.p.Send(progressbar.ProgressErrMsg{Err: err})
+			return fmt.Errorf("create file %q: %w", fPath, err)
+		}
+		defer file.Close()
+
+		resp, err := request.Request(http.MethodGet, v.URL)
+		if err != nil {
+			d.p.Send(progressbar.ProgressErrMsg{Err: err})
+			return fmt.Errorf("send request to %q: %w", v.URL, err)
+		}
+		defer resp.Body.Close()
+
+		fileName := filepath.Base(file.Name())
+
+		pb := progressBar(d, resp, file, fileName)
+
+		m.Mux.Lock()
+		m.Pbs[fileName] = pb
+		m.Mux.Unlock()
+
+		pb.Pw.Start(d.p)
+
+		return nil
+	}
+
+	return saveM3U8(d, v, outputDir, fPath, fName, m)
+}
+
+func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string, m *progressbar.Model) error {
+	m3u8Data, err := getM3U8Data(v.URL)
 	if err != nil {
-		d.p.Send(progressbar.ProgressErrMsg{Err: err})
-		return fmt.Errorf("create file %q: %w", fPath, err)
+		return err
+	}
+
+	list, listType, err := m3u8.DecodeFrom(bytes.NewReader(m3u8Data), true)
+	if err != nil {
+		return fmt.Errorf("parse m3u8 data: %w", err)
+	}
+	if listType != m3u8.MEDIA {
+		return errors.New("no media data found")
+	}
+	mediaPL := list.(*m3u8.MediaPlaylist)
+
+	segURIs := make([]string, 0)
+	for _, s := range mediaPL.Segments {
+		if s == nil {
+			continue
+		}
+		segURIs = append(segURIs, s.URI)
+	}
+
+	tmpDir := filepath.Join(outputDir, "tmp-"+fName)
+	err = os.MkdirAll(tmpDir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("make dir %q: %w", tmpDir, err)
+	}
+
+	fileListPath := filepath.Join(tmpDir, "fileList.txt")
+	err = createTmpFileList(fileListPath, len(segURIs))
+	if err != nil {
+		return err
+	}
+
+	key, err := getKey(mediaPL.Key.URI)
+	if err != nil {
+		return err
+	}
+
+	iv := key
+	if mediaPL.Key.IV != "" {
+		iv = []byte(mediaPL.Key.IV)
+	}
+
+	pb := countProgressBar(d, int64(len(segURIs)), fName)
+	pb.Status = progressbar.DownloadingStatus
+
+	m.Mux.Lock()
+	m.Pbs[fName] = pb
+	m.Mux.Unlock()
+
+	sem := semaphore.NewWeighted(100)
+	group, ctx := errgroup.WithContext(context.Background())
+	dlTS := func(idx, u string) func() error {
+		return func() error {
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return err
+			}
+			defer sem.Release(1)
+
+			tsPath := filepath.Join(tmpDir, idx+".ts")
+
+			if err := saveTS(tsPath, u, key, iv); err != nil {
+				return err
+			}
+
+			pb.Pc.Increase()
+
+			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond)
+
+			return nil
+		}
+	}
+
+	for i, u := range segURIs {
+		group.Go(dlTS(strconv.Itoa(i), u))
+	}
+
+	if err := group.Wait(); err != nil {
+		return err
+	}
+
+	d.p.Send(progressbar.ProgressStatusMsg{
+		FileName: fName,
+		Status:   progressbar.MergingStatus,
+	})
+
+	err = util.MergeToMP4(fileListPath, fPath)
+	if err != nil {
+		return err
+	}
+
+	d.p.Send(progressbar.ProgressStatusMsg{
+		FileName: fName,
+		Status:   progressbar.CompleteStatus,
+	})
+
+	return nil
+}
+
+func createTmpFileList(path string, num int) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("create %q: %w", path, err)
 	}
 	defer file.Close()
 
-	resp, err := request.Request(http.MethodGet, v.URL)
+	for i := 0; i < num; i++ {
+		_, err := file.WriteString(fmt.Sprintf("file '%s.ts'\n", strconv.Itoa(i)))
+		if err != nil {
+			return fmt.Errorf("write file list: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func saveTS(path, u string, key, iv []byte) error {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
+			Proxy:               http.ProxyFromEnvironment,
+		},
+	}
+
+	headers := map[string]string{
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36",
+	}
+	resp, err := util.Get(client, u, headers)
 	if err != nil {
-		d.p.Send(progressbar.ProgressErrMsg{Err: err})
-		return fmt.Errorf("send request to %q: %w", v.URL, err)
+		return err
 	}
 	defer resp.Body.Close()
 
-	fileName := filepath.Base(file.Name())
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("read data from %q: %w", u, err)
+	}
 
-	pb := progressBar(d, resp, file, fileName)
+	tsData, err := util.AESDecrypt(data, key, iv)
+	if err != nil {
+		return fmt.Errorf("decrypt data from %q: %w", err)
+	}
 
-	m.Mux.Lock()
-	m.Pbs[fileName] = pb
-	m.Mux.Unlock()
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("create %q: %w", path, err)
+	}
+	defer file.Close()
 
-	pb.Pw.Start(d.p)
+	_, err = file.Write(tsData)
+	if err != nil {
+		return fmt.Errorf("write %q: %w", path, err)
+	}
 
 	return nil
+}
+
+func getKey(u string) ([]byte, error) {
+	resp, err := request.Request(http.MethodGet, u)
+
+	if err != nil {
+		return nil, fmt.Errorf("get m3u8 Key: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read m3u8 Key: %w", err)
+	}
+
+	return data, nil
+}
+
+func getM3U8Data(u string) ([]byte, error) {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
+			Proxy:               http.ProxyFromEnvironment,
+		},
+	}
+
+	headers := map[string]string{
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36",
+	}
+	resp, err := util.Get(client, u, headers)
+	if err != nil {
+		return nil, fmt.Errorf("get m3u8 data: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read m3u8 data: %w", err)
+	}
+
+	return data, nil
+}
+
+func countProgressBar(d *Downloader, total int64, fileName string) *progressbar.ProgressBar {
+	pc := &progressbar.ProgressCounter{
+		Total:      total,
+		Downloaded: atomic.Int64{},
+		FileName:   fileName,
+		Onprogress: func(fileName string, ratio float64) {
+			d.p.Send(progressbar.ProgressMsg{
+				FileName: fileName,
+				Ratio:    ratio,
+			})
+		},
+	}
+
+	colors := color.PbColors.Colors()
+
+	pb := &progressbar.ProgressBar{
+		Pc:       pc,
+		Progress: progress.New(progress.WithGradient(colors[0], colors[1])),
+		FileName: fileName,
+	}
+
+	return pb
 }
 
 func progressBar(d *Downloader, resp *http.Response, file *os.File, fileName string) *progressbar.ProgressBar {

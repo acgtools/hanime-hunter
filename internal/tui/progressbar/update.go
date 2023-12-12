@@ -10,6 +10,18 @@ const (
 	maxWidth = 80
 )
 
+type ProgressMsg struct {
+	FileName string
+	Ratio    float64
+}
+
+type ProgressErrMsg struct{ Err error }
+
+type ProgressStatusMsg struct {
+	FileName string
+	Status   string
+}
+
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) { //nolint:cyclop
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -37,8 +49,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) { //nolint:cyclop
 		if pb, ok := m.Pbs[fileName]; ok {
 			cmds = append(cmds, pb.Progress.SetPercent(ratio))
 		}
-
 		return m, tea.Batch(cmds...)
+
+	case ProgressStatusMsg:
+		fileName, status := msg.FileName, msg.Status
+		if pb, ok := m.Pbs[fileName]; ok {
+			pb.Status = status
+		}
+		return m, nil
 
 	case progress.FrameMsg:
 		var cmds []tea.Cmd
