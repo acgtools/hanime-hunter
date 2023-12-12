@@ -31,6 +31,7 @@
       * [使用 go](#使用-go)
       * [从 releases 页面下载](#从-releases-页面下载)
    * [支持的网站](#支持的网站)
+   * [社区](#社区)
    * [快速开始](#快速开始)
       * [前提条件](#前提条件)
          * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
@@ -45,6 +46,7 @@
       * [指定画质](#指定画质)
       * [只获取可下载的文件信息](#只获取可下载的文件信息)
    * [Issue](#issue)
+   * [Star History](#star-history)
 
 ## 安装
 
@@ -66,6 +68,10 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 | ---------- | -------- | ---------- | -------- | -------- | ------------- |
 | hanime1.me | 中文     | ✓          | ✓        | ✓        | Available     |
 | hanime.tv  | English  | Developing | Planning | Planning | Not Available |
+
+## 社区
+
+[Discord](https://discord.gg/e78WnwYq)
 
 ## 快速开始
 
@@ -213,3 +219,7 @@ $ hani dl -i https://hanime1.me/watch?v=xxxx
 ## Issue
 
 欢迎创建 issue 来报告 bug 或者 请求添加新特性。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=acgtools/hanime-hunter&type=Date)](https://star-history.com/#acgtools/hanime-hunter&Date)
