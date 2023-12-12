@@ -10,13 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/log"
-
-	"golang.org/x/net/html"
-
-	"github.com/acgtools/hanime-hunter/pkg/util"
-
 	"github.com/acgtools/hanime-hunter/internal/resolvers"
+	"github.com/acgtools/hanime-hunter/pkg/util"
+	"github.com/charmbracelet/log"
+	"golang.org/x/net/html"
 )
 
 func init() {
@@ -82,9 +79,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 		}
 
 		vidMap, eps := getVidMap(video)
-
 		episodes = append(episodes, eps[0])
-
 		res = append(res, &resolvers.HAnime{
 			Site:   site,
 			Title:  video.HentaiFranchise.Title,
@@ -131,7 +126,7 @@ func resolvePlaylist(u string) ([]*resolvers.HAnime, error) {
 func getPlaylistSlugs(u string) ([]string, error) {
 	doc, err := util.GetHTMLPage(NewClient(), u, map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	listDivs := util.FindTagByNameAttrs(doc, "div", true, []html.Attribute{{Key: "class", Val: "playlists__panel panel__content"}})
@@ -201,7 +196,7 @@ func getVideoID(path string) (string, error) {
 func getVideoInfo(slug string) (*Video, error) {
 	resp, err := util.Get(NewClient(), fmt.Sprintf("%s%s", videoAPIURL, slug), map[string]string{"User-Agent": resolvers.UA})
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	defer resp.Body.Close()
 
