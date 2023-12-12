@@ -27,6 +27,7 @@
 <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326405.jpg" height=180> <img src="https://github-issue-vote.vercel.app/vote?issue=https://github.com/acgtools/hanime-hunter/issues/3" height=190> <img src="https://raw.githubusercontent.com/dreamjz/pics/main/pics/2023/202312102326670.jpg" height=180>
 
 * [hanime-hunter](#hanime-hunter)
+   * [选择你的阵营](#选择你的阵营)
    * [安装](#安装)
       * [使用 go](#使用-go)
       * [从 releases 页面下载](#从-releases-页面下载)
@@ -35,9 +36,10 @@
    * [快速开始](#快速开始)
       * [前提条件](#前提条件)
          * [确保你的终端字符集为 UTF-8](#确保你的终端字符集为-utf-8)
+      * [FFmpeg](#ffmpeg)
       * [Command Help](#command-help)
          * [Download](#download)
-   * [Download](#download-1)
+   * [Hanime1me](#hanime1me)
       * [只下载一个视频](#只下载一个视频)
       * [下载整个系列](#下载整个系列)
          * [跳过已下载的文件](#跳过已下载的文件)
@@ -45,6 +47,14 @@
       * [指定输出路径](#指定输出路径)
       * [指定画质](#指定画质)
       * [只获取可下载的文件信息](#只获取可下载的文件信息)
+   * [Hanimetv](#hanimetv)
+      * [Only one episode](#only-one-episode)
+      * [Full series based on the specified episode](#full-series-based-on-the-specified-episode)
+         * [Skip downloaded files](#skip-downloaded-files)
+      * [Download playlist](#download-playlist)
+      * [Specify the output directory](#specify-the-output-directory)
+      * [Specify the quality](#specify-the-quality)
+      * [Get info only](#get-info-only)
    * [Issue](#issue)
    * [Star History](#star-history)
 
@@ -64,10 +74,10 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 
 > **NSFW** 警告, 以下站点包含敏感内容.
 
-| Site       | Language | Episode    | Series   | Playlist | Status        |
-| ---------- | -------- | ---------- | -------- | -------- | ------------- |
-| hanime1.me | 中文     | ✓          | ✓        | ✓        | Available     |
-| hanime.tv  | English  | Developing | Planning | Planning | Not Available |
+| Site       | Language | Episode | Series | Playlist | Status    |
+| ---------- | -------- | ------- | ------ | -------- | --------- |
+| hanime1.me | 中文     | ✓       | ✓      | ✓        | Available |
+| hanime.tv  | English  | ✓       | ✓      | ✓        | Available |
 
 ## 社区
 

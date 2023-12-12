@@ -31,6 +31,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
 <!--ts-->
 
 * [hanime-hunter](#hanime-hunter)
+   * [Choose your faction](#choose-your-faction)
    * [Installation](#installation)
       * [Using go](#using-go)
       * [Download from releases](#download-from-releases)
@@ -39,9 +40,10 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
    * [Quick Start](#quick-start)
       * [Prerequisites](#prerequisites)
          * [Ensure that your terminal charset is UTF-8](#ensure-that-your-terminal-charset-is-utf-8)
+      * [FFmpeg](#ffmpeg)
       * [Command Help](#command-help)
          * [Download](#download)
-   * [Download](#download-1)
+   * [Hanime1me](#hanime1me)
       * [Only one episode](#only-one-episode)
       * [Full series based on the specified episode](#full-series-based-on-the-specified-episode)
          * [Skip downloaded files](#skip-downloaded-files)
@@ -49,6 +51,14 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
       * [Specify the output directory](#specify-the-output-directory)
       * [Specify the quality](#specify-the-quality)
       * [Get info only](#get-info-only)
+   * [Hanimetv](#hanimetv)
+      * [Only one episode](#only-one-episode-1)
+      * [Full series based on the specified episode](#full-series-based-on-the-specified-episode-1)
+         * [Skip downloaded files](#skip-downloaded-files-1)
+      * [Download playlist](#download-playlist-1)
+      * [Specify the output directory](#specify-the-output-directory-1)
+      * [Specify the quality](#specify-the-quality-1)
+      * [Get info only](#get-info-only-1)
    * [Issue](#issue)
    * [Star History](#star-history)
 
@@ -70,10 +80,10 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
 
 > **NSFW** Warning, the following site may contain sensitive content.
 
-| Site       | Language | Episode    | Series   | Playlist | Status        |
-| ---------- | -------- | ---------- | -------- | -------- | ------------- |
-| hanime1.me | Chinese  | ✓          | ✓        | ✓        | Available     |
-| hanime.tv  | English  | Developing | Planning | Planning | Not Available |
+| Site       | Language | Episode | Series | Playlist | Status    |
+| ---------- | -------- | ------- | ------ | -------- | --------- |
+| hanime1.me | Chinese  | ✓       | ✓      | ✓        | Available |
+| hanime.tv  | English  | ✓       | ✓      | ✓        | Available |
 
 ## Community
 
