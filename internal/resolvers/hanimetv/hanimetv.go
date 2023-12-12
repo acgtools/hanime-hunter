@@ -172,7 +172,6 @@ func getVidMap(v *Video) (map[string]*resolvers.Video, []string) {
 			URL:     s.URL,
 			IsM3U8:  true,
 			Title:   v.HentaiVideo.Slug,
-			Size:    s.Size,
 			Ext:     "mp4",
 		}
 	}
