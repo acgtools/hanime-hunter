@@ -63,7 +63,7 @@
 ### 使用 `go`
 
 ```sh
-$ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
+$ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter@latest
 ```
 
 ### 从 releases 页面下载

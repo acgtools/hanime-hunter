@@ -69,7 +69,7 @@ Check [here](https://github.com/acgtools/hanime-hunter/issues/3) and chooes a re
 ### Using `go`
 
 ```sh
-$ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter
+$ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter@latest
 ```
 
 ### Download from releases
