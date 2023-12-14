@@ -1,5 +1,7 @@
 # hanime-hunter
 
+![](https://unv-shield.librian.net/api/unv_shield?txt=変態&scale=1.3)![](https://unv-shield.librian.net/api/unv_shield?repo=acgtools/hanime-hunter&scale=1.7)![](https://unv-shield.librian.net/api/unv_shield?txt=好！&scale=2.0)
+
 用于下载里番的 CLI 工具。
 
 如果你喜欢这个程序，可以帮忙给一个 star (o゜▽゜)o☆ ，谢谢 OwO。
