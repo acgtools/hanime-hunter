@@ -1,6 +1,6 @@
 # hanime-hunter
 
-![](https://unv-shield.librian.net/api/unv_shield?txt=変態&scale=1.3)![](https://unv-shield.librian.net/api/unv_shield?repo=acgtools/hanime-hunter&scale=1.7)![](https://unv-shield.librian.net/api/unv_shield?txt=好！&scale=2.0)
+![](https://unv-shield.librian.net/api/unv_shield?txt=绅士&scale=1.3)![](https://unv-shield.librian.net/api/unv_shield?repo=acgtools/hanime-hunter&scale=1.7)![](https://unv-shield.librian.net/api/unv_shield?txt=好！&scale=2.0)
 
 English | [简体中文](./README_ZH_CN.md)
 
