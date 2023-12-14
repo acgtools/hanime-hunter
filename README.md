@@ -89,7 +89,7 @@ $ go install -ldflags "-s -w" github.com/acgtools/hanime-hunter@latest
 
 ## Community
 
-[Discord](https://discord.gg/e78WnwYq)
+[Discord](https://discord.gg/rrJQWNFa)
 
 ## Quick Start
 
