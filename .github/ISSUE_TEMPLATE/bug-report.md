@@ -16,7 +16,7 @@ assignees: ''
 <!-- Steps to reproduce the bug, please do not post the full video link here -->
 
 Site: <!-- e.g. hanime1.me -->
-Video/Playlist:  <!-- e.g. watch/123456 or playlist/123456-->
+Video:  <!-- e.g. watch/123456 -->
 Steps:
  1. 
  2. 
