@@ -29,10 +29,15 @@ linters:
     - gochecknoglobals # disbale no global variable
     - depguard # disbale depguard
     - noctx # disable noctx
+    - contextcheck
 
 linters-settings:
   cyclop:
     max-complexity: 12
+  funlen:
+    lines: 80
+    statements: 40
+    ignore-comments: true
 
 issues:
   exclude-rules:

@@ -97,14 +97,13 @@ func download(aniURL string, cfg *Config) error {
 	}()
 
 	if _, err := p.Run(); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	for _, e := range errs {
-		if e == nil {
-			continue
+		if e != nil {
+			log.Errorf("dl: %v", e)
 		}
-		log.Errorf("dl: %v", e)
 	}
 
 	return nil
