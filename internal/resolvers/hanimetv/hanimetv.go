@@ -82,7 +82,7 @@ func (re *resolver) Resolve(u string, opt *resolvers.Option) ([]*resolvers.HAnim
 		episodes = append(episodes, eps[0])
 		res = append(res, &resolvers.HAnime{
 			Site:   site,
-			Title:  video.HentaiFranchise.Title,
+			Title:  video.HentaiFranchise.Slug,
 			Videos: vidMap,
 		})
 	}
