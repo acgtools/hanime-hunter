@@ -196,7 +196,6 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 			defer sem.Release(1)
 
 			tsPath := filepath.Join(tmpDir, idx+".ts")
-
 			for i := 1; ; i++ {
 				err := saveTS(tsPath, u, key, iv)
 				if err == nil {
@@ -207,9 +206,7 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 				log.Debugf("err: %s", err)
 				log.Debugf("retry download %s", tsPath)
 			}
-
 			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
-
 			pb.Pc.Increase()
 			return nil
 		}
