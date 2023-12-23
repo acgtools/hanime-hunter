@@ -27,11 +27,21 @@ const (
 
 	CompleteStatus = "Complete"
 	CompleteColor  = "#00FF00"
+
+	ErrStatus = "Error"
+	ErrColor  = "#CC0000"
+
+	RetryStatus = "Retry"
+	RetryColor  = "#CC66CC"
 )
 
 func (m *Model) View() string {
 	if m.err != nil {
 		return "Error downloading: " + m.err.Error() + "\n"
+	}
+
+	if m.width == 0 {
+		return ""
 	}
 
 	var sb strings.Builder
@@ -77,6 +87,10 @@ func renderPbStatus(s string) string {
 		return statusStyle.Foreground(lipgloss.Color(MergingColor)).Render(s)
 	case CompleteStatus:
 		return statusStyle.Foreground(lipgloss.Color(CompleteColor)).Render(s)
+	case RetryStatus:
+		return statusStyle.Foreground(lipgloss.Color(RetryColor)).Render(s)
+	case ErrStatus:
+		return statusStyle.Foreground(lipgloss.Color(ErrColor)).Render(s)
 	default:
 		return ""
 	}

@@ -43,12 +43,18 @@ type ProgressWriter struct {
 	OnProgress func(string, float64)
 }
 
-func (pw *ProgressWriter) Start(p *tea.Program) {
+func (pw *ProgressWriter) Start(p *tea.Program) (int64, error) {
+	p.Send(ProgressStatusMsg{
+		FileName: pw.FileName,
+		Status:   DownloadingStatus,
+	})
+
 	// TeeReader calls PW.Write() each time a new response is received
-	_, err := io.Copy(pw.File, io.TeeReader(pw.Reader, pw))
+	written, err := io.Copy(pw.File, io.TeeReader(pw.Reader, pw))
 	if err != nil {
-		p.Send(ProgressErrMsg{err})
+		return written, err
 	}
+	return written, nil
 }
 
 func (pw *ProgressWriter) Write(p []byte) (int, error) {

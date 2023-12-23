@@ -100,6 +100,9 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	}
 
 	if !v.IsM3U8 {
+		pb := progressBar(d, v.Size, fName)
+		m.AddPb(pb)
+
 		file, err := os.Create(fPath)
 		if err != nil {
 			d.p.Send(progressbar.ProgressErrMsg{Err: err})
@@ -107,21 +110,41 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 		}
 		defer file.Close()
 
-		resp, err := request.Request(http.MethodGet, v.URL)
-		if err != nil {
-			d.p.Send(progressbar.ProgressErrMsg{Err: err})
-			return fmt.Errorf("send request to %q: %w", v.URL, err)
+		var curSize int64
+		headers := map[string]string{}
+		for i := 1; ; i++ {
+			resp, err := request.Request(http.MethodGet, v.URL, headers)
+			if err != nil {
+				d.p.Send(progressbar.ProgressErrMsg{Err: err})
+				return fmt.Errorf("send request to %q: %w", v.URL, err)
+			}
+			defer resp.Body.Close()
+
+			pb.Pw.File = file
+			pb.Pw.Reader = resp.Body
+			written, err := pb.Pw.Start(d.p)
+			if err == nil {
+				break
+			} else if i-1 == int(d.Option.Retry) {
+				d.p.Send(progressbar.ProgressStatusMsg{
+					FileName: fName,
+					Status:   progressbar.ErrStatus,
+				})
+				return err
+			}
+
+			curSize += written
+			headers["Range"] = fmt.Sprintf("bytes=%d-", curSize)
+			d.p.Send(progressbar.ProgressStatusMsg{
+				FileName: fName,
+				Status:   progressbar.RetryStatus,
+			})
+
+			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond)
 		}
-		defer resp.Body.Close()
 
-		fileName := filepath.Base(file.Name())
-
-		pb := progressBar(d, resp, file, fileName)
-		m.AddPb(pb)
-
-		pb.Pw.Start(d.p)
 		d.p.Send(progressbar.ProgressStatusMsg{
-			FileName: fileName,
+			FileName: fName,
 			Status:   progressbar.CompleteStatus,
 		})
 
@@ -293,7 +316,7 @@ func saveTS(path, u string, key, iv []byte) error {
 }
 
 func getKeyIV(mediaPL *m3u8.MediaPlaylist) ([]byte, []byte, error) {
-	resp, err := request.Request(http.MethodGet, mediaPL.Key.URI)
+	resp, err := request.Request(http.MethodGet, mediaPL.Key.URI, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get m3u8 Key: %w", err)
 	}
@@ -357,12 +380,10 @@ func countProgressBar(d *Downloader, total int64, fileName string) *progressbar.
 	return pb
 }
 
-func progressBar(d *Downloader, resp *http.Response, file *os.File, fileName string) *progressbar.ProgressBar {
+func progressBar(d *Downloader, total int64, fileName string) *progressbar.ProgressBar {
 	pw := &progressbar.ProgressWriter{
-		Total:    resp.ContentLength,
-		File:     file,
-		Reader:   resp.Body,
 		FileName: fileName,
+		Total:    total,
 		OnProgress: func(fileName string, ratio float64) {
 			d.p.Send(progressbar.ProgressMsg{
 				FileName: fileName,
