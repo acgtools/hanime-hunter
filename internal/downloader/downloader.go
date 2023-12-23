@@ -186,8 +186,9 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 	pb := countProgressBar(d.p, int64(len(segURIs)), fName)
 	m.AddPb(pb)
 
+	ctx := context.Background()
 	sem := semaphore.NewWeighted(defaultGoRoutineNum)
-	group, ctx := errgroup.WithContext(context.Background())
+	group := &errgroup.Group{} // no need to cancel other dl goroutines
 	dlTS := func(idx, u string) func() error {
 		return func() error {
 			if err := sem.Acquire(ctx, 1); err != nil {
@@ -203,8 +204,6 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 				} else if i-1 == int(d.Option.Retry) {
 					return err
 				}
-				log.Debugf("err: %s", err)
-				log.Debugf("retry download %s", tsPath)
 			}
 			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
 			pb.Pc.Increase()
@@ -216,7 +215,8 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 		group.Go(dlTS(strconv.Itoa(i), u))
 	}
 	if err := group.Wait(); err != nil {
-		return err //nolint:wrapcheck
+		d.SendPbStatus(fName, progressbar.ErrStatus)
+		return fmt.Errorf("download %s: %w", fName, err)
 	}
 
 	return d.mergeFiles(fileListPath, fName, fPath)

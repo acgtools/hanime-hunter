@@ -71,7 +71,6 @@ func download(aniURL string, cfg *Config) error {
 
 	ctx := context.Background()
 	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
-	//sem := semaphore.NewWeighted(int64(2))
 	wg := sync.WaitGroup{}
 	errs := make([]error, len(anis))
 	for i, ani := range anis {
