@@ -172,6 +172,7 @@ func getVidMap(v *Video) (map[string]*resolvers.Video, []string) {
 			URL:     s.URL,
 			IsM3U8:  true,
 			Title:   v.HentaiVideo.Slug,
+			Size:    s.Size,
 			Ext:     "mp4",
 		}
 	}
@@ -218,5 +219,6 @@ func NewClient() *http.Client {
 			TLSHandshakeTimeout: 30 * time.Second, //nolint:gomnd
 			Proxy:               http.ProxyFromEnvironment,
 		},
+		Timeout: 15 * time.Minute, //nolint:gomnd
 	}
 }

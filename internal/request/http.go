@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var Headers = map[string]string{
+var DefaultHeaders = map[string]string{
 	"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 	"Accept-Charset":  "UTF-8,*;q=0.5",
 	"Accept-Encoding": "gzip,deflate,sdch",
@@ -16,7 +16,7 @@ var Headers = map[string]string{
 }
 
 // Request sent http request to download anime with fake UA
-func Request(method, url string) (*http.Response, error) {
+func Request(method, url string, headers map[string]string) (*http.Response, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy:               http.ProxyFromEnvironment,
@@ -31,7 +31,11 @@ func Request(method, url string) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
-	for k, v := range Headers {
+
+	for k, v := range DefaultHeaders {
+		req.Header.Set(k, v)
+	}
+	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
 

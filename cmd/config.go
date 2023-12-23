@@ -21,11 +21,11 @@ type DLOption struct {
 	Quality    string
 	Info       bool
 	LowQuality bool
+	Retry      uint8
 }
 
 type ResolverOpt struct {
-	Series   bool
-	PlayList bool
+	Series bool
 }
 
 func NewCfg() (*Config, error) {

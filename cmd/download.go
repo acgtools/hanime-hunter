@@ -17,6 +17,10 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+const (
+	defaultRetries = 10
+)
+
 var dlCmd = &cobra.Command{
 	Use:   "dl",
 	Short: "download",
@@ -40,8 +44,7 @@ var dlCmd = &cobra.Command{
 
 func download(aniURL string, cfg *Config) error {
 	anis, err := resolvers.Resolve(aniURL, &resolvers.Option{
-		Series:   cfg.ResolverOpt.Series,
-		PlayList: cfg.ResolverOpt.PlayList,
+		Series: cfg.ResolverOpt.Series,
 	})
 	if err != nil {
 		return err //nolint:wrapcheck
@@ -58,6 +61,7 @@ func download(aniURL string, cfg *Config) error {
 		Quality:    cfg.DLOpt.Quality,
 		Info:       cfg.DLOpt.Info,
 		LowQuality: cfg.DLOpt.LowQuality,
+		Retry:      cfg.DLOpt.Retry,
 	})
 
 	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
@@ -95,17 +99,21 @@ func download(aniURL string, cfg *Config) error {
 }
 
 func init() {
+	// DL Opts
 	dlCmd.Flags().StringP("output-dir", "o", "", "output directory")
 	dlCmd.Flags().StringP("quality", "q", "", "specify video quality. e.g. 1080p, 720p, 480p ...")
-
-	dlCmd.Flags().BoolP("series", "s", false, "download full series")
 	dlCmd.Flags().BoolP("info", "i", false, "get anime info only")
 	dlCmd.Flags().Bool("low-quality", false, "download the lowest quality video")
+	dlCmd.Flags().Uint8("retry", defaultRetries, "number of retries, max 255")
 
 	_ = viper.BindPFlag("DLOpt.OutputDir", dlCmd.Flags().Lookup("output-dir"))
 	_ = viper.BindPFlag("DLOpt.Quality", dlCmd.Flags().Lookup("quality"))
 	_ = viper.BindPFlag("DLOpt.Info", dlCmd.Flags().Lookup("info"))
 	_ = viper.BindPFlag("DLOpt.LowQuality", dlCmd.Flags().Lookup("low-quality"))
+	_ = viper.BindPFlag("DLOpt.Retry", dlCmd.Flags().Lookup("retry"))
+
+	// Resolver Opts
+	dlCmd.Flags().BoolP("series", "s", false, "download full series")
 
 	_ = viper.BindPFlag("ResolverOpt.Series", dlCmd.Flags().Lookup("series"))
 }

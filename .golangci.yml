@@ -30,6 +30,10 @@ linters:
     - depguard # disbale depguard
     - noctx # disable noctx
 
+linters-settings:
+  cyclop:
+    max-complexity: 12
+
 issues:
   exclude-rules:
     - path: _test\.go
