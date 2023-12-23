@@ -17,6 +17,10 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+const (
+	defaultRetries = 10
+)
+
 var dlCmd = &cobra.Command{
 	Use:   "dl",
 	Short: "download",
@@ -100,7 +104,7 @@ func init() {
 	dlCmd.Flags().StringP("quality", "q", "", "specify video quality. e.g. 1080p, 720p, 480p ...")
 	dlCmd.Flags().BoolP("info", "i", false, "get anime info only")
 	dlCmd.Flags().Bool("low-quality", false, "download the lowest quality video")
-	dlCmd.Flags().Uint8("retry", 10, "number of retries, max 255")
+	dlCmd.Flags().Uint8("retry", defaultRetries, "number of retries, max 255")
 
 	_ = viper.BindPFlag("DLOpt.OutputDir", dlCmd.Flags().Lookup("output-dir"))
 	_ = viper.BindPFlag("DLOpt.Quality", dlCmd.Flags().Lookup("quality"))

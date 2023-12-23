@@ -52,7 +52,7 @@ func (pw *ProgressWriter) Start(p *tea.Program) (int64, error) {
 	// TeeReader calls PW.Write() each time a new response is received
 	written, err := io.Copy(pw.File, io.TeeReader(pw.Reader, pw))
 	if err != nil {
-		return written, err
+		return written, err //nolint:wrapcheck
 	}
 	return written, nil
 }

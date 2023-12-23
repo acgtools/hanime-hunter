@@ -73,6 +73,13 @@ func (d *Downloader) Download(ani *resolvers.HAnime, m *progressbar.Model) error
 	return nil
 }
 
+func (d *Downloader) SendPbStatus(fileName, status string) {
+	d.p.Send(progressbar.ProgressStatusMsg{
+		FileName: fileName,
+		Status:   status,
+	})
+}
+
 func sPrintVideosInfo(vs []*resolvers.Video) string {
 	var sb strings.Builder
 	for _, v := range vs {
@@ -100,61 +107,59 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	}
 
 	if !v.IsM3U8 {
-		pb := progressBar(d, v.Size, fName)
-		m.AddPb(pb)
-
-		file, err := os.Create(fPath)
-		if err != nil {
-			d.p.Send(progressbar.ProgressErrMsg{Err: err})
-			return fmt.Errorf("create file %q: %w", fPath, err)
-		}
-		defer file.Close()
-
-		var curSize int64
-		headers := map[string]string{}
-		for i := 1; ; i++ {
-			resp, err := request.Request(http.MethodGet, v.URL, headers)
-			if err != nil {
-				d.p.Send(progressbar.ProgressErrMsg{Err: err})
-				return fmt.Errorf("send request to %q: %w", v.URL, err)
-			}
-			defer resp.Body.Close()
-
-			pb.Pw.File = file
-			pb.Pw.Reader = resp.Body
-			written, err := pb.Pw.Start(d.p)
-			if err == nil {
-				break
-			} else if i-1 == int(d.Option.Retry) {
-				d.p.Send(progressbar.ProgressStatusMsg{
-					FileName: fName,
-					Status:   progressbar.ErrStatus,
-				})
-				return err
-			}
-
-			curSize += written
-			headers["Range"] = fmt.Sprintf("bytes=%d-", curSize)
-			d.p.Send(progressbar.ProgressStatusMsg{
-				FileName: fName,
-				Status:   progressbar.RetryStatus,
-			})
-
-			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond)
-		}
-
-		d.p.Send(progressbar.ProgressStatusMsg{
-			FileName: fName,
-			Status:   progressbar.CompleteStatus,
-		})
-
-		return nil
+		return d.saveSingleVideo(v, fPath, fName, m)
 	}
 
-	return saveM3U8(d, v, outputDir, fPath, fName, m)
+	return d.saveM3U8(v, outputDir, fPath, fName, m)
 }
 
-func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string, m *progressbar.Model) error {
+func (d *Downloader) saveSingleVideo(v *resolvers.Video, fPath, fName string, m *progressbar.Model) error {
+	pb := progressBar(d.p, v.Size, fName)
+	m.AddPb(pb)
+
+	file, err := os.Create(fPath)
+	if err != nil {
+		d.p.Send(progressbar.ProgressErrMsg{Err: err})
+		return fmt.Errorf("create file %q: %w", fPath, err)
+	}
+	defer file.Close()
+
+	var curSize int64
+	headers := map[string]string{}
+	for i := 1; ; i++ {
+		written, err := writeFile(d.p, pb.Pw, file, v.URL, headers)
+		if err == nil {
+			break
+		} else if i-1 == int(d.Option.Retry) {
+			d.SendPbStatus(fName, progressbar.ErrStatus)
+			return err
+		}
+
+		curSize += written
+		headers["Range"] = fmt.Sprintf("bytes=%d-", curSize)
+		d.SendPbStatus(fName, progressbar.RetryStatus)
+
+		time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
+	}
+
+	d.SendPbStatus(fName, progressbar.CompleteStatus)
+
+	return nil
+}
+
+func writeFile(p *tea.Program, pw *progressbar.ProgressWriter, file *os.File, u string, headers map[string]string) (int64, error) {
+	resp, err := request.Request(http.MethodGet, u, headers)
+	if err != nil {
+		return 0, fmt.Errorf("send request to %q: %w", u, err)
+	}
+	defer resp.Body.Close()
+
+	pw.File = file
+	pw.Reader = resp.Body
+	return pw.Start(p) //nolint:wrapcheck
+}
+
+func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string, m *progressbar.Model) error {
 	segURIs, mediaPL, err := getSegURIs(v.URL)
 	if err != nil {
 		return err
@@ -178,7 +183,7 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 		return err
 	}
 
-	pb := countProgressBar(d, int64(len(segURIs)), fName)
+	pb := countProgressBar(d.p, int64(len(segURIs)), fName)
 	m.AddPb(pb)
 
 	sem := semaphore.NewWeighted(defaultGoRoutineNum)
@@ -210,24 +215,18 @@ func saveM3U8(d *Downloader, v *resolvers.Video, outputDir, fPath, fName string,
 		return err //nolint:wrapcheck
 	}
 
-	return mergeFiles(d, fileListPath, fName, fPath)
+	return d.mergeFiles(fileListPath, fName, fPath)
 }
 
-func mergeFiles(d *Downloader, fileListPath, fName, fPath string) error {
-	d.p.Send(progressbar.ProgressStatusMsg{
-		FileName: fName,
-		Status:   progressbar.MergingStatus,
-	})
+func (d *Downloader) mergeFiles(fileListPath, fName, fPath string) error {
+	d.SendPbStatus(fName, progressbar.MergingStatus)
 
 	err := util.MergeToMP4(fileListPath, fPath)
 	if err != nil {
 		return fmt.Errorf("file merge: %w", err)
 	}
 
-	d.p.Send(progressbar.ProgressStatusMsg{
-		FileName: fName,
-		Status:   progressbar.CompleteStatus,
-	})
+	d.SendPbStatus(fName, progressbar.CompleteStatus)
 
 	return nil
 }
@@ -355,13 +354,13 @@ func getM3U8Data(u string) ([]byte, error) {
 	return data, nil
 }
 
-func countProgressBar(d *Downloader, total int64, fileName string) *progressbar.ProgressBar {
+func countProgressBar(p *tea.Program, total int64, fileName string) *progressbar.ProgressBar {
 	pc := &progressbar.ProgressCounter{
 		Total:      total,
 		Downloaded: atomic.Int64{},
 		FileName:   fileName,
 		Onprogress: func(fileName string, ratio float64) {
-			d.p.Send(progressbar.ProgressMsg{
+			p.Send(progressbar.ProgressMsg{
 				FileName: fileName,
 				Ratio:    ratio,
 			})
@@ -380,12 +379,12 @@ func countProgressBar(d *Downloader, total int64, fileName string) *progressbar.
 	return pb
 }
 
-func progressBar(d *Downloader, total int64, fileName string) *progressbar.ProgressBar {
+func progressBar(p *tea.Program, total int64, fileName string) *progressbar.ProgressBar {
 	pw := &progressbar.ProgressWriter{
 		FileName: fileName,
 		Total:    total,
 		OnProgress: func(fileName string, ratio float64) {
-			d.p.Send(progressbar.ProgressMsg{
+			p.Send(progressbar.ProgressMsg{
 				FileName: fileName,
 				Ratio:    ratio,
 			})
