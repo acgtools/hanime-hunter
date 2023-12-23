@@ -24,8 +24,7 @@ func Request(method, url string, headers map[string]string) (*http.Response, err
 			TLSHandshakeTimeout: 10 * time.Second,                      //nolint:gomnd
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 		},
-		// Timeout: 15 * time.Minute, //nolint:gomnd
-		Timeout: 3 * time.Second, //nolint:gomnd
+		Timeout: 15 * time.Minute, //nolint:gomnd
 	}
 
 	req, err := http.NewRequest(method, url, nil) //nolint:noctx

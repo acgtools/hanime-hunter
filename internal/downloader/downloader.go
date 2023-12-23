@@ -197,8 +197,15 @@ func (d *Downloader) saveM3U8(v *resolvers.Video, outputDir, fPath, fName string
 
 			tsPath := filepath.Join(tmpDir, idx+".ts")
 
-			if err := saveTS(tsPath, u, key, iv); err != nil {
-				return err
+			for i := 1; ; i++ {
+				err := saveTS(tsPath, u, key, iv)
+				if err == nil {
+					break
+				} else if i-1 == int(d.Option.Retry) {
+					return err
+				}
+				log.Debugf("err: %s", err)
+				log.Debugf("retry download %s", tsPath)
 			}
 
 			time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
@@ -275,12 +282,11 @@ func getSegURIs(u string) ([]string, *m3u8.MediaPlaylist, error) {
 }
 
 func saveTS(path, u string, key, iv []byte) error {
-	client := hanimetv.NewClient()
 	headers := map[string]string{
 		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36",
 	}
 
-	resp, err := util.Get(client, u, headers)
+	resp, err := util.Get(hanimetv.NewClient(), u, headers)
 	if err != nil {
 		return fmt.Errorf("download TS file: %w", err)
 	}
