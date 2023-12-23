@@ -13,7 +13,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -64,44 +63,52 @@ func download(aniURL string, cfg *Config) error {
 		Retry:      cfg.DLOpt.Retry,
 	})
 
-	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
-	group, ctx := errgroup.WithContext(context.Background())
-	dl := func(ani *resolvers.HAnime, m *progressbar.Model) func() error {
-		return func() error {
-			if err := sem.Acquire(ctx, 1); err != nil {
-				return fmt.Errorf("goroutine download %q acquire semaphore: %w", ani.Title, err)
-			}
-			defer sem.Release(1)
-
-			err := d.Download(ani, m) //nolint:contextcheck
-			if err != nil {
-				return fmt.Errorf("download %q error: %w", ani.Title, err)
-			}
-			return nil
-		}
-	}
-
 	if d.Option.Info {
 		log.Infof("Start fetching anime info")
 	} else {
 		log.Info("Start downloading ...")
 	}
 
-	for _, ani := range anis {
-		group.Go(dl(ani, m))
+	ctx := context.Background()
+	sem := semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0)))
+	//sem := semaphore.NewWeighted(int64(2))
+	wg := sync.WaitGroup{}
+	errs := make([]error, len(anis))
+	for i, ani := range anis {
+		wg.Add(1)
+
+		go func(idx int, a *resolvers.HAnime) {
+			defer wg.Done()
+
+			if err := sem.Acquire(ctx, 1); err != nil {
+				log.Errorf("Failed to acquire semaphore: %v", err)
+				return
+			}
+			defer sem.Release(1)
+
+			if err := d.Download(a, m); err != nil {
+				errs[idx] = err
+			}
+		}(i, ani)
 	}
 
 	go func() {
-		if err := group.Wait(); err != nil {
-			p.Send(progressbar.ProgressErrMsg{Err: err})
-			return
-		}
-		p.Send(progressbar.ProgressSuccessMsg{})
+		wg.Wait()
+		p.Send(progressbar.ProgressCompleteMsg{})
 	}()
 
-	_, err = p.Run()
+	if _, err := p.Run(); err != nil {
+		return err
+	}
 
-	return err //nolint:wrapcheck
+	for _, e := range errs {
+		if e == nil {
+			continue
+		}
+		log.Errorf("dl: %v", e)
+	}
+
+	return nil
 }
 
 func init() {

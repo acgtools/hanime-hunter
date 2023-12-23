@@ -15,7 +15,7 @@ type ProgressMsg struct {
 	Ratio    float64
 }
 
-type ProgressSuccessMsg struct{}
+type ProgressCompleteMsg struct{}
 
 type ProgressErrMsg struct{ Err error }
 
@@ -40,7 +40,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) { //nolint:cyclop
 		m.width = w
 		return m, nil
 
-	case ProgressSuccessMsg:
+	case ProgressCompleteMsg:
 		return m, tea.Quit
 
 	case ProgressErrMsg:
