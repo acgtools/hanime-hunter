@@ -91,11 +91,17 @@ func download(aniURL string, cfg *Config) error {
 		group.Go(dl(ani, m))
 	}
 
-	if _, err := p.Run(); err != nil {
-		log.Errorf("Start progress bar %v", err)
-	}
+	go func() {
+		if err := group.Wait(); err != nil {
+			p.Send(progressbar.ProgressErrMsg{Err: err})
+			return
+		}
+		p.Send(progressbar.ProgressSuccessMsg{})
+	}()
 
-	return group.Wait() //nolint:wrapcheck
+	_, err = p.Run()
+
+	return err //nolint:wrapcheck
 }
 
 func init() {
