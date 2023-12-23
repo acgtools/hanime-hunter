@@ -24,8 +24,7 @@ type DLOption struct {
 }
 
 type ResolverOpt struct {
-	Series   bool
-	PlayList bool
+	Series bool
 }
 
 func NewCfg() (*Config, error) {

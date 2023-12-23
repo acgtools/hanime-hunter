@@ -40,8 +40,7 @@ var dlCmd = &cobra.Command{
 
 func download(aniURL string, cfg *Config) error {
 	anis, err := resolvers.Resolve(aniURL, &resolvers.Option{
-		Series:   cfg.ResolverOpt.Series,
-		PlayList: cfg.ResolverOpt.PlayList,
+		Series: cfg.ResolverOpt.Series,
 	})
 	if err != nil {
 		return err //nolint:wrapcheck
