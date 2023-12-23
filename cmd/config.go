@@ -21,6 +21,7 @@ type DLOption struct {
 	Quality    string
 	Info       bool
 	LowQuality bool
+	Retry      uint8
 }
 
 type ResolverOpt struct {

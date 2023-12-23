@@ -40,6 +40,7 @@ type Option struct {
 	Quality    string
 	Info       bool
 	LowQuality bool
+	Retry      uint8
 }
 
 func NewDownloader(p *tea.Program, opt *Option) *Downloader {
