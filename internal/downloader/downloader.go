@@ -80,6 +80,13 @@ func (d *Downloader) SendPbStatus(fileName, status string) {
 	})
 }
 
+func (d *Downloader) SendPbProgress(fileName string, ratio float64) {
+	d.p.Send(progressbar.ProgressMsg{
+		FileName: fileName,
+		Ratio:    ratio,
+	})
+}
+
 func sPrintVideosInfo(vs []*resolvers.Video) string {
 	var sb strings.Builder
 	for _, v := range vs {
@@ -100,7 +107,7 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	fName := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
 	fPath := filepath.Join(outputDir, fName)
 	if f, err := os.Lstat(fPath); err == nil {
-		if f.Size() == v.Size {
+		if f.Size() == v.Size || v.IsM3U8 {
 			log.Infof("File %q exists, Skip ...", fPath)
 			return nil
 		}
@@ -117,16 +124,28 @@ func (d *Downloader) saveSingleVideo(v *resolvers.Video, fPath, fName string, m 
 	pb := progressBar(d.p, v.Size, fName)
 	m.AddPb(pb)
 
-	file, err := os.Create(fPath)
+	file, err := os.OpenFile(fPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644) //nolint:gomnd
 	if err != nil {
-		d.p.Send(progressbar.ProgressErrMsg{Err: err})
+		d.SendPbStatus(fName, progressbar.ErrStatus)
 		return fmt.Errorf("create file %q: %w", fPath, err)
 	}
 	defer file.Close()
 
-	var curSize int64
+	fStat, err := file.Stat()
+	if err != nil {
+		d.SendPbStatus(fName, progressbar.ErrStatus)
+		return fmt.Errorf("get file stat %q: %w", fPath, err)
+	}
+
+	curSize := fStat.Size()
+	if curSize > 0 {
+		pb.Pw.Downloaded = curSize
+		d.SendPbProgress(fName, float64(curSize)/float64(v.Size))
+	}
+
 	headers := map[string]string{}
 	for i := 1; ; i++ {
+		headers["Range"] = fmt.Sprintf("bytes=%d-", curSize)
 		written, err := writeFile(d.p, pb.Pw, file, v.URL, headers)
 		if err == nil {
 			break
@@ -136,7 +155,6 @@ func (d *Downloader) saveSingleVideo(v *resolvers.Video, fPath, fName string, m 
 		}
 
 		curSize += written
-		headers["Range"] = fmt.Sprintf("bytes=%d-", curSize)
 		d.SendPbStatus(fName, progressbar.RetryStatus)
 
 		time.Sleep(time.Duration(util.RandomInt63n(900, 3000)) * time.Millisecond) //nolint:gomnd
