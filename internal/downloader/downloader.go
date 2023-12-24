@@ -124,7 +124,7 @@ func (d *Downloader) saveSingleVideo(v *resolvers.Video, fPath, fName string, m 
 	pb := progressBar(d.p, v.Size, fName)
 	m.AddPb(pb)
 
-	file, err := os.OpenFile(fPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(fPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		d.SendPbStatus(fName, progressbar.ErrStatus)
 		return fmt.Errorf("create file %q: %w", fPath, err)
