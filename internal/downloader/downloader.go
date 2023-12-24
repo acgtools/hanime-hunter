@@ -100,7 +100,7 @@ func (d *Downloader) save(v *resolvers.Video, aniTitle string, m *progressbar.Mo
 	fName := fmt.Sprintf("%s %s.%s", v.Title, v.Quality, v.Ext)
 	fPath := filepath.Join(outputDir, fName)
 	if f, err := os.Lstat(fPath); err == nil {
-		if f.Size() == v.Size {
+		if f.Size() == v.Size || v.IsM3U8 {
 			log.Infof("File %q exists, Skip ...", fPath)
 			return nil
 		}
