@@ -125,7 +125,7 @@ en_US.UTF-8
 ### Command Help
 
 ```sh
-$ hani.exe -h
+$ hani -h
 HAnime downloader. Repo: https://github.com/acgtools/hanime-hunter
 
 Usage:
@@ -158,6 +158,7 @@ Flags:
       --low-quality         download the lowest quality video
   -o, --output-dir string   output directory
   -q, --quality string      specify video quality. e.g. 1080p, 720p, 480p ...
+      --retry uint8         number of retries, max 255 (default 10)
   -s, --series              download full series
 
 Global Flags:

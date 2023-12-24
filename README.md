@@ -131,7 +131,7 @@ en_US.UTF-8
 ### Command Help
 
 ```sh
-$ hani.exe -h
+$ hani -h
 HAnime downloader. Repo: https://github.com/acgtools/hanime-hunter
 
 Usage:
@@ -164,6 +164,7 @@ Flags:
       --low-quality         download the lowest quality video
   -o, --output-dir string   output directory
   -q, --quality string      specify video quality. e.g. 1080p, 720p, 480p ...
+      --retry uint8         number of retries, max 255 (default 10)
   -s, --series              download full series
 
 Global Flags:
@@ -262,7 +263,9 @@ $ hani dl -s https://hanime.tv/videos/hentai/xxx
 
 #### Skip downloaded files
 
-Not supported
+If some files get stuck during downloading, stop the program and then restart the download.
+
+It will skip the files that have already been downloaded.
 
 ### Download playlist
 
